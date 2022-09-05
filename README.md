@@ -1,7 +1,7 @@
 # FYP Project C112
 
 ## Summary
-This project aims to study and model the ferry service operations optimisation problem as a Capacitated Vehicle Routing Problem with Backhauls and Time Windows (CVRPBTW).
+This project aims to study and model the ferry service operations optimisation problem as a Dynamic Capacitated Vehicle Routing Problem with Backhauls and Time Windows (DCVRPBTW).
 
 The objective of this repository is to develop a scheduling system that can generate an optimal set of routes and schedules that best maximises the ability of ferry service operations to meet its daily demands. The following methods were employed to tackle this optimisation problem.
 
@@ -16,17 +16,22 @@ The algorithms were run and tested on a MacBook Pro 13-inch 2018 model with a 2.
 #### 1. Clone this repository in your working directory (Skip this step if this folder is already downloaded in your computer)
 
 ```bash
-git clone https://github.com/chensxb97/ferryServiceVRP.git
+git clone https://github.com/aneo008/ferryServiceVRP.git
 ```
 
-#### 2. Install dependencies in virtual environment
+#### 2. Install dependencies in virtual environment 
 
 ```bash
 cd /YourDirectory/ferryServiceVRP # Change directory to ferry service VRP folder
+# If venv file does not already exist
 python3 -m venv venv # Create Virtual Environment for Python 3.10 named "venv"
-source venv/bin/activate # Enter virtual environment
-pip install -r requirements.txt 
-deactivate # To exit virtual environment when done
+
+# Enter virtual environment
+source venv/bin/activate 
+pip install -r requirements.txt # If venv file exists, this should already be installe
+
+# To exit virtual environment when done
+deactivate 
 ```
 
 ## Usage

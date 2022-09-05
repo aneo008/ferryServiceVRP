@@ -23,7 +23,7 @@ def optimiser(file,fleetsize):
     dirName = os.path.dirname(os.path.abspath(__file__))
     raw_Timetable = os.path.join(dirName, 'outputs/logs/raw_Timetable.csv')
     timetable = pd.read_csv(
-        raw_Timetable, encoding='latin1', error_bad_lines=False)
+        raw_Timetable, encoding='latin1', on_bad_lines='warn')
     return timetable
 
 # Import pre-calculated route and objective value

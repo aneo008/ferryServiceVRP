@@ -155,7 +155,7 @@ def main():
 
     # Orders dataset
     print('Reading orders dataset...')
-    order_df = pd.read_csv(fileName, encoding='latin1', error_bad_lines=False)
+    order_df = pd.read_csv(fileName, encoding='latin1', on_bad_lines='warn')
     order_df = order_df.sort_values(by=['Start_TW','End_TW'])
 
     # Anchorage map
