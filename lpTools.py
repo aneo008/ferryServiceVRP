@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0,'C:/users/benedict/appdata/local/programs/python/python37/lib/site-packages')
-
 from utils import Color, Locations
 
 # Visualise solution on anchorage map           

@@ -1,7 +1,3 @@
-import sys
-sys.path.append('C:/Program Files/IBM/ILOG/CPLEX_Studio201/cplex/python/3.7/x64_win64')
-sys.path.insert(0,'C:/users/benedict/appdata/local/programs/python/python37/lib/site-packages')
-
 import argparse
 import matplotlib.pyplot as plt
 import os
@@ -124,11 +120,11 @@ def route2Timetable(df, fleetsize, solutionSet):
         timetable.append(temp_table)
         
     return timetable
-    
+
 def main():
     # Start timer
     time_start = timer.time()
-
+    
     argparser = argparse.ArgumentParser(description=__doc__)
     argparser.add_argument('--file', metavar='f', default='order', help='File name of the order book')
     argparser.add_argument('--fleetsize', metavar='l', default='5', help='Total number of launches available')
@@ -221,6 +217,8 @@ def main():
             table_West.append(table_MSP[i])
 
         # Write consolidated timetable to csv file
+        df = pd.DataFrame(table_West)
+        df.to_csv(os.path.join(outputsLogsDir,'raw_Timetable.csv'), index=False)
         printTable(table_West,f)
         print('Wrote timetable to {}\n'.format(resultsFile))
     
@@ -233,6 +231,8 @@ def main():
 
     print('Total runtime for {} tours: {}.'.format(len(df_tours), total_time))
     print('Average runtime for 1 tour: {}.'.format(total_time/len(df_tours)))
+
+    return 
 
 if __name__ == '__main__':
 

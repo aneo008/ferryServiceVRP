@@ -8,8 +8,8 @@ The objective of this repository is to develop a scheduling system that can gene
 #### 1. Exact methods - Exhaustive Search, Integer Linear Programming Model
 #### 2. Heuristic methods - Genetic Algorithm
 
-All the above methods were implemented using Python 3.7.
-The algorithms were run and tested on a Lenovo YOGA S740 with an Intel i7 CPU and 16 GB RAM.
+All the above methods were implemented using Python 3.10.
+The algorithms were run and tested on a MacBook Pro 13-inch 2018 model with a 2.3 GHz Quad-Core Intel Core i5 and 16 GB RAM.
 
 ## Installation
 
@@ -19,28 +19,19 @@ The algorithms were run and tested on a Lenovo YOGA S740 with an Intel i7 CPU an
 git clone https://github.com/chensxb97/ferryServiceVRP.git
 ```
 
-#### 2. Install CPLEX using instructions from the link below
-
-https://github.com/IBMPredictiveAnalytics/Simple_Linear_Programming_with_CPLEX/blob/master/cplex_instruction.md
-
-
-#### 3. Install dependencies
+#### 2. Install dependencies in virtual environment
 
 ```bash
+cd /YourDirectory/ferryServiceVRP # Change directory to ferry service VRP folder
+python3 -m venv venv # Create Virtual Environment for Python 3.10 named "venv"
+source venv/bin/activate # Enter virtual environment
 pip install -r requirements.txt 
+deactivate # To exit virtual environment when done
 ```
 
 ## Usage
 
-#### 1. Setting the environment variable PYTHONPATH
-
-Change line 2 for the following python scripts to your CPLEX directory: 'yourCplexhome/python/VERSION/PLATFORM'
-
-- *exhaustiveSearch.py*
-- *lpModel.py*
-- *schedule.py*
-
-#### 2. Test python scripts on a sample dataset: *LT1.csv*, by default. 
+#### 1. Test python scripts on a sample dataset: *LT1.csv*, by default. 
 
 Exhaustive Search
 ```python
@@ -61,7 +52,7 @@ When running *lpModel.py* and *ga.py*, the scripts generate visualisation maps t
 
 The analysis of the output logs from *lpModel.py* and *ga.py* can be found in *resultsAll.xlsx*, in folder: */outputs/logs*.
 
-#### 3. Run scheduling system, which optimises the sets of routes for the following test case.
+#### 2. Run scheduling system, which optimises the sets of routes for the following test case.
 
 Dataset: *datasets/order.csv*,
 
