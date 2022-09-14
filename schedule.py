@@ -82,9 +82,9 @@ def route2Timetable(df, fleetsize, solutionSet):
         temp_departure = []
 
         if df['Port'][0]=='West':
-            temp_location.append('West Coast Pier')
+            temp_location.append('Port West')
         else:
-            temp_location.append('Marina South Pier')
+            temp_location.append('Port MSP')
             
         temp_arrival.append('NA') # Departure only (First Node)
         temp_departure.append(start_time)
@@ -100,9 +100,9 @@ def route2Timetable(df, fleetsize, solutionSet):
                 last_time += travel_time+df['Demand'][links[i][j]]
             else:
                 if df['Port'][0]=='West':
-                    temp_location.append('West Coast Pier')
+                    temp_location.append('Port West')
                 else:
-                    temp_location.append('Marina South Pier')       
+                    temp_location.append('Port MSP')       
                 travel_time = round(distMatrix[links[i][j]][links[i][j-1]]/0.463)
                 temp_arrival.append(travel_time+last_time)
                 temp_departure.append('NA') # Arrival Only (Last Node)
@@ -121,16 +121,9 @@ def route2Timetable(df, fleetsize, solutionSet):
         
     return timetable
 
-def main():
+def schedule(file,fleet):
     # Start timer
     time_start = timer.time()
-    
-    argparser = argparse.ArgumentParser(description=__doc__)
-    argparser.add_argument('--file', metavar='f', default='order', help='File name of the order book')
-    argparser.add_argument('--fleetsize', metavar='l', default='5', help='Total number of launches available')
-    args = argparser.parse_args()
-    file = args.file
-    fleet = int(args.fleetsize)
 
     # Directory and File name
     dirName = os.path.dirname(os.path.abspath(__file__))
@@ -150,8 +143,20 @@ def main():
     f = open(resultsFile, 'w+')
 
     # Headers of csv file
-    f.write('Launch 1,,,Launch 2,,,Launch 3,,,Launch 4,,,Launch 5\n')
-    f.write('Location,Arrival,Departure,Location,Arrival,Departure,Location,Arrival,Departure,Location,Arrival,Departure,Location,Arrival,Departure\n')
+
+    launch_string = "Launch "
+    header_string = "Location,Arrival,Departure,"
+    f_write_string_1 = ""
+    f_write_string_2 = ""
+
+    for i in range(fleet):
+        f_write_string_1 += launch_string + str(i+1) +",,,"
+        f_write_string_2 += header_string
+    else:
+        f_write_string_1 += "\n"
+        f_write_string_2 += "\n"
+    f.write(f_write_string_1)
+    f.write(f_write_string_2)
 
     # Orders dataset
     print('Reading orders dataset...')
@@ -185,6 +190,7 @@ def main():
 
     # Optimise the schedule of each tour
     print('Beginning optimisation...\n')
+    objFn = {}
     for i in range(len(df_tours)):
         print('Tour {}'.format(i+1))
         fig, ax = plt.subplots()
@@ -194,13 +200,14 @@ def main():
         df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
 
         # Perform LP
-        route1, solutionSet_West, _, _, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, False) 
-        route2, solutionSet_MSP, _, _, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, False)
+        route1, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, False) 
+        route2, solutionSet_MSP, _, cost2, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, False)     
 
         # Draw and visualise solutions
         drawSolution(solutionSet_West, df_West, ax)
         drawSolution(solutionSet_MSP, df_MSP, ax)
         print('Drawing solutions')
+        # print(df_West)
         # plt.show() 
 
         # Save visualisations in a png file
@@ -213,15 +220,21 @@ def main():
         table_MSP = route2Timetable(df_MSP, fleetsize_MSP, solutionSet_MSP)
         
         # Consolidate both West and MSP timetables
-        for i in range(len(table_MSP)):
-            table_West.append(table_MSP[i])
+        for j in range(len(table_MSP)):
+            table_West.append(table_MSP[j])
 
         # Write consolidated timetable to csv file
-        df = pd.DataFrame(table_West)
-        df.to_csv(os.path.join(outputsLogsDir,'raw_Timetable.csv'), index=False)
+        tt_df = pd.DataFrame(table_West)
+        tt_df.to_csv(os.path.join(outputsLogsDir,'raw_Timetable_{}.csv'.format(i)), index=False)
+
+        objFn[i] = [cost1,cost2]
+        
         printTable(table_West,f)
         print('Wrote timetable to {}\n'.format(resultsFile))
     
+    objFn_df = pd.DataFrame(objFn)
+    objFn_df.to_csv(os.path.join(outputsLogsDir,'objFn.csv'), index=False)
+
     f.close()
     print('Finished optimisation.\n')
 
@@ -232,7 +245,20 @@ def main():
     print('Total runtime for {} tours: {}.'.format(len(df_tours), total_time))
     print('Average runtime for 1 tour: {}.'.format(total_time/len(df_tours)))
 
-    return 
+    return objFn
+
+def main():
+    
+    argparser = argparse.ArgumentParser(description=__doc__)
+    argparser.add_argument('--file', metavar='f', default='order', help='File name of the order book')
+    argparser.add_argument('--fleetsize', metavar='l', default='5', help='Total number of launches available')
+    args = argparser.parse_args()
+    file = args.file
+    fleet = int(args.fleetsize)
+
+    schedule(file,fleet)
+    
+    return
 
 if __name__ == '__main__':
 

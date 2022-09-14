@@ -23,8 +23,9 @@ git clone https://github.com/aneo008/ferryServiceVRP.git
 
 ```bash
 cd /YourDirectory/ferryServiceVRP # Change directory to ferry service VRP folder
-# If venv file does not already exist
-python3 -m venv venv # Create Virtual Environment for Python 3.10 named "venv"
+# If venv file already exist, delete it and create it again every time you shift the location of this project
+# See https://stackoverflow.com/questions/20952797/pip-installing-in-global-site-packages-instead-of-virtualenv if you are facing venv issues
+python3.10 -m venv venv # Create Virtual Environment for Python 3.10 named "venv"
 
 # Enter virtual environment
 source venv/bin/activate 

@@ -38,6 +38,7 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, log=True):
     # Distance matrix
     distMatrix = computeDistMatrix(df, MapGraph)
     velocity = 0.463 # knot
+    # print(distMatrix)
 
     # Calculate distances and times from distance matrix
     travDist = {(i, j): distMatrix[i][j] for i in Cc for j in Cc}
@@ -98,7 +99,10 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, log=True):
     mdl.add_constraints(load[j, v] <= Capacity for j in Cc for v in numOfVehicles)
 
     # All launches depart the depot at tour departure time
-    mdl.add_constraints(t[0, v] == df.iloc[0,4] for v in numOfVehicles)
+    mdl.add_constraints(t[0, v] >= df.iloc[0,4] for v in numOfVehicles)
+
+    # All launches return to the depot before next tour departure time
+    mdl.add_constraints(t[0, v] <= df.iloc[0,5] for v in numOfVehicles)
 
     # Launch's travelling time balance constraint between nodes i and j
     mdl.add_constraints(t[j,v] >= t[i,v] + servTime[i] + travTime[i,j] - M *(1 - x[i,j,v]) for i in Cc for j in C for v in numOfVehicles if i != j)
@@ -106,9 +110,6 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, log=True):
     # Total tour duration is strictly less than 2.5hrs
     mdl.add_constraints(mdl.sum(x[i, j, v]*travTime[i, j] + x[i, j, v]*servTime[i] for i in Cc for j in C)<=150 for v in numOfVehicles)
     mdl.add_constraints(mdl.sum(x[i, j, v]*travTime[i, j] + x[i, j, v]*servTime[i] for i in C for j in Cc)<=150 for v in numOfVehicles)
-
-    # Total number of nodes served per launch should be less than or equal to 5
-    mdl.add_constraints(mdl.sum(x[i, j, v] for i in Cc for j in C) <= 5 for v in numOfVehicles)
 
     # Objective function
     fuelCost = mdl.sum(travDist[i, j] * x[i, j, v] for i in Cc for j in Cc for v in numOfVehicles if i!=j)
@@ -175,7 +176,7 @@ def main():
         fileName = os.path.join(datasetsDir, file)
 
         # Dataset
-        order_df = pd.read_csv(fileName, encoding='latin1', error_bad_lines=False)
+        order_df = pd.read_csv(fileName, encoding='latin1', on_bad_lines='warn')
         order_df = order_df.sort_values(by=['Start_TW','End_TW'])
         
         # Visualise map

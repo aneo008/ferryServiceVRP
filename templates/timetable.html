@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Ferry Timetable</title>
+{% endblock %}
+
+{% block body %}
+<h1 style="text-align: center">Ferry Timetable</h1>
+
+<div class="continer">
+	<div class="row">
+		{% for tour in launch_route %}	
+			<div class="col">
+			<h2 style="text-align: center">Tour {{tour+1}}</h2>
+			{% for launch in launch_route[tour] %}
+				{% if launch_route[tour][launch]|length == 2 %}
+					<h3> Launch {{launch+1}} </h3> <br>
+					Not deployed <br><br>
+				{% else %}
+					<h3> Launch {{launch+1}} </h3> <br>
+					Route is {{launch_route[tour][launch]}}<br>
+					<table class="table">
+						<tr>
+							<th>Zone</th>
+							<th>ETA</th>
+							<th>ETD</th>
+						</tr>
+					{% for zone in range(launch_route[tour][launch]|length) %}
+						<tr>
+							
+							<td>{{timetable[tour].iloc[launch,zone][0]}}</td>
+							<td>{{timetable[tour].iloc[launch,zone][1]}}</td>
+							<td>{{timetable[tour].iloc[launch,zone][2]}}</td>
+						</tr>
+					{% endfor %}
+					</table>
+				{% endif %}
+			{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

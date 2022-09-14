@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Bookings</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center">Bookings</h1>
+    <table class="table">
+        <th>Order ID</th>
+        <th>Type</th>
+        <th>Zone</th>
+        <th>Demand</th>
+        <th>Start TW</th>
+        <th>End TW</th>
+        <th>Actions</th>
+        {% if mainQ is not none %}    
+            {% for i in range(mainQ.index|length) %}
+                <tr>
+                    {% for j in range(mainQ.columns|length) %}
+                        {% if j==1 %}
+                            {% if mainQ.iloc[i,j]==1 %}
+                                <td>Linehaul</td>
+                            {% else %}
+                                <td>Backhaul</td>
+                            {% endif %}
+                        {% else %}
+                            <td>{{mainQ.iloc[i,j]}}</td>
+                        {% endif %}
+                    {% endfor %}   
+                    <td>
+                        <a href="#">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+    </table>
+</div>
+
+{% endblock %}
