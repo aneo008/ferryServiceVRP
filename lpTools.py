@@ -1,4 +1,6 @@
 from utils import Color, Locations
+import matplotlib.pyplot as plt
+import os
 
 # Visualise solution on anchorage map           
 def drawSolution(solutionSet, df, ax):
@@ -10,6 +12,25 @@ def drawSolution(solutionSet, df, ax):
         ax.arrow(Locations[zone_s][0], Locations[zone_s][1], \
             Locations[zone_e][0]-Locations[zone_s][0], Locations[zone_e][1]-Locations[zone_s][1], \
                 head_width=10, head_length=10, color = Color[launch_id])
+
+def drawSolution2(solutionSet, df, ax, tour):
+    img = plt.imread("Port_Of_Singapore_Anchorages_Chartlet.png")
+    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/plots/dynamic')
+    
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    for i in range(len(solutionSet)):
+        ax.scatter(Locations[df.iloc[solutionSet[i][0], 2]][0], Locations[df.iloc[solutionSet[i][0], 2]][1], marker='o')
+        zone_s = df.iloc[solutionSet[i][0], 2]
+        zone_e = df.iloc[solutionSet[i][1], 2]
+        launch_id = str(solutionSet[i][2])
+        ax.arrow(Locations[zone_s][0], Locations[zone_s][1], \
+            Locations[zone_e][0]-Locations[zone_s][0], Locations[zone_e][1]-Locations[zone_s][1], \
+                head_width=10, head_length=10, color = Color[launch_id])
+
+    # Save visualisations in a png file
+    outputPlot = os.path.join(outputsPlotsDir,'Tour' + str(tour+1) + '_schedule.png')
+    fig.savefig(outputPlot)
 
 # Print each launch's route from solution set
 def printRoutes(solutionSet):

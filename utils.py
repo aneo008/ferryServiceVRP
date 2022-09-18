@@ -2,6 +2,8 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+global Locations, Edges
+
 Color = {'1': 'b', '2': 'c', '3': 'k', '4': 'm', '5': 'r'}
 
 Locations = {"Z01" : [2710, 940], "Z02" : [2772, 1030], "Z03" : [2778, 1103], "Z04" : [2783, 1159], "Z05" : [2448, 1229], "Z06" : [2422, 1175], "Z07" : [2400, 1148], "Z08" : [2270, 1140], "Z09" : [2224, 1185], "Z10" : [2165, 1240], "Z11" : [2178, 1300], "Z12" : [2057, 1433], "Z13" : [1993, 1386], "Z14" : [1853, 1342], "Z15" : [1870, 1465], "Z16" : [1757, 1425], "Z17" : [1520, 1590], "Z18" : [1477, 1480], "Z19" : [1395, 1472], "Z20" : [1357, 1498], "Z21" : [1432, 1540], "Z22" : [1156, 1750], "Z23" : [1115, 1703], "Z24" : [1072, 1584], "Z25" : [973, 1575], "Z26" : [1005, 1871], "Z27" : [960, 1835], "Z28" : [867, 1747], "Z29" : [739, 1689], "Z30" : [643, 1585], "Port West" : [1211, 1200], "Port MSP" : [1740, 1325]}
@@ -30,6 +32,7 @@ MapGraph.add_weighted_edges_from(Edges)
 def computeDistMatrix(df, map):
     numOfCustomers = df.shape[0]
     distMatrix = np.zeros((numOfCustomers+2, numOfCustomers+2))
+
     for i in range(numOfCustomers+2):
         for j in range(numOfCustomers+2):
             if i<numOfCustomers and j < numOfCustomers:
@@ -38,6 +41,33 @@ def computeDistMatrix(df, map):
                 distMatrix[i][j] = nx.dijkstra_path_length(map, df['Zone'][i], df['Zone'][0]) # From zone to pier
             elif j<numOfCustomers and i >=numOfCustomers:
                 distMatrix[i][j] = nx.dijkstra_path_length(map, df['Zone'][0], df['Zone'][j]) # From pier to zone
+    return distMatrix
+
+def computeDistMatrix2(df, launchlocation):
+    global Locations, Edges
+    
+    numOfCustomers = df.shape[0]
+    distMatrix = np.zeros((numOfCustomers+2, numOfCustomers+2))
+    Locations["launchlocation"] = launchlocation[0][1]
+
+    # Calculate and create edges between launch location and various zones
+    for edge in launchlocation[1]:
+        # Divided by 30 to estimate edge length in Edges. Obtained from averaging dist and edge_tuple distances
+        dist = np.sqrt(np.square(Locations["launchlocation"][0]-Locations[edge][0])+np.square(Locations["launchlocation"][1]-Locations[edge][1]))/30
+        Edges.append(('launchlocation',edge,dist))
+
+    # Recreate graph
+    MapGraph = nx.Graph()
+    MapGraph.add_weighted_edges_from(Edges)
+
+    for i in range(numOfCustomers+2):
+        for j in range(numOfCustomers+2):
+            if i<numOfCustomers and j < numOfCustomers:
+                distMatrix[i][j] = nx.dijkstra_path_length(MapGraph, df['Zone'][i], df['Zone'][j]) # Interzonal distance
+            elif i<numOfCustomers and j>=numOfCustomers:
+                distMatrix[i][j] = nx.dijkstra_path_length(MapGraph, df['Zone'][i], df['Zone'][0]) # From zone to pier
+            elif j<numOfCustomers and i >=numOfCustomers:
+                distMatrix[i][j] = nx.dijkstra_path_length(MapGraph, df['Zone'][0], df['Zone'][j]) # From pier to zone
     return distMatrix
 
 # Print all zone locations on map

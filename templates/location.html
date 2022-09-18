@@ -7,7 +7,32 @@
 {% block body %}
 <div class="content">
     <h1 style="text-align: center">Ferry Location</h1>
-    {{ time_now }}
+    <div id = "launch">
+        {{ launch_location }} <br/>
+        {{ launch_etd }} <br/>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        setInterval(function () {
+            $("#launch").load(location.href + " #launch");
+        }, 1000);
+    });
+</script>
+
+<div class="container text-center">
+    <h2>Ferry Routes</h2>
+    <div class="row">
+        <div class="col">
+            <img src="static/img/order_Tour1_schedule.png" class="img-fluid">
+            Tour 1 
+        </div>
+        <div class="col">
+            <img src="static/img/order_Tour2_schedule.png" class="img-fluid">
+            Tour 2
+        </div> 
+    </div>
 </div>
 
 {% endblock %}

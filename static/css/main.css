@@ -1,0 +1,12 @@
+div#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 300px;
+    display: none;
+    background: url(/static/img/loadingimage.gif) no-repeat;
+    cursor: wait;
+}

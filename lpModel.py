@@ -6,7 +6,7 @@ import time as timer
 
 from docplex.mp.model import Model
 from lpTools import drawSolution, printRoutes
-from utils import MapGraph, computeDistMatrix, separateTasks
+from utils import MapGraph, computeDistMatrix, computeDistMatrix2, separateTasks
 
 M = 1000 # Arbitrary constant
 Capacity = 14
@@ -21,8 +21,8 @@ time_start = timer.time()
 ################################################################################################
 
 # Linear Programming Model formulation
-def calculateRoute(numOfCustomers, numOfVehicles, df, log=True):
-   
+def calculateRoute(numOfCustomers, numOfVehicles, df, launchlocation, log=True):
+
     # Initialise model
     mdl = Model('VRP')
 
@@ -35,12 +35,15 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, log=True):
     # Enumerator of 1 - V
     numOfVehicles = [i for i in range(1, numOfVehicles + 1)]
 
-    # Distance matrix
-    distMatrix = computeDistMatrix(df, MapGraph)
-    velocity = 0.463 # knot
-    # print(distMatrix)
+    if launchlocation == None:
+        # Distance matrix
+        distMatrix = computeDistMatrix(df, MapGraph)
+        # print(distMatrix)
+    else:
+        distMatrix = computeDistMatrix2(df, launchlocation)
 
     # Calculate distances and times from distance matrix
+    velocity = 0.463 # knot
     travDist = {(i, j): distMatrix[i][j] for i in Cc for j in Cc}
     travTime = {(i, j): distMatrix[i][j]/velocity for i in Cc for j in Cc}
 
@@ -187,8 +190,8 @@ def main():
         df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(order_df, fleet)
 
         # Run LP Model
-        route1, solutionSet_West, _, cost1, fc1, pc1, running_time1, _ = calculateRoute(len(df_West)-1, fleetsize_West, df_West)
-        route2, solutionSet_MSP, _, cost2, fc2, pc2, running_time2, _ = calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP)
+        route1, solutionSet_West, _, cost1, fc1, pc1, running_time1, _ = calculateRoute(len(df_West)-1, fleetsize_West, df_West,None)
+        route2, solutionSet_MSP, _, cost2, fc2, pc2, running_time2, _ = calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP,None)
         
         # Results
         print(file)

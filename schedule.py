@@ -1,4 +1,6 @@
 import argparse
+import matplotlib
+matplotlib.use('SVG')
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -6,7 +8,7 @@ import time as timer
 
 from lpModel import calculateRoute
 from lpTools import drawSolution
-from utils import MapGraph, computeDistMatrix, separateTasks
+from utils import MapGraph, computeDistMatrix, computeDistMatrix2, separateTasks
 
 ##############################################################################################
 #---------------------------------df format---------------------------------------------------
@@ -44,8 +46,11 @@ def printTable(table,f):
             pass
 
 # Organise routes in a timetable
-def route2Timetable(df, fleetsize, solutionSet):
-    distMatrix = computeDistMatrix(df, MapGraph)
+def route2Timetable(df, fleetsize, solutionSet, launchlocation):
+    if launchlocation == None:
+        distMatrix = computeDistMatrix(df, MapGraph)
+    else:
+        distMatrix = computeDistMatrix2(df, launchlocation)
     start_time = df.iloc[0,4] # Start Time
     route_set=[] # Set of routes
     links = [] # List of edges in all routes
@@ -121,7 +126,7 @@ def route2Timetable(df, fleetsize, solutionSet):
         
     return timetable
 
-def schedule(file,fleet):
+def schedule(file,fleet,tour_ip):
     # Start timer
     time_start = timer.time()
 
@@ -192,6 +197,8 @@ def schedule(file,fleet):
     print('Beginning optimisation...\n')
     objFn = {}
     for i in range(len(df_tours)):
+        if tour_ip != None:
+            i = tour_ip
         print('Tour {}'.format(i+1))
         fig, ax = plt.subplots()
         ax.imshow(img)
@@ -200,8 +207,8 @@ def schedule(file,fleet):
         df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
 
         # Perform LP
-        route1, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, False) 
-        route2, solutionSet_MSP, _, cost2, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, False)     
+        route1, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, None, False) 
+        route2, solutionSet_MSP, _, cost2, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, None, False)     
 
         # Draw and visualise solutions
         drawSolution(solutionSet_West, df_West, ax)
@@ -211,13 +218,14 @@ def schedule(file,fleet):
         # plt.show() 
 
         # Save visualisations in a png file
-        outputPlot = os.path.join(outputsPlotsDir,file + '_' + 'Tour' + str(i+1) + '_schedule.png')
+        # outputPlot = os.path.join(outputsPlotsDir,file + '_' + 'Tour' + str(i+1) + '_schedule.png')
+        outputPlot = os.path.join(dirName,'static/order_Tour' + str(i+1) + '_schedule.png')
         fig.savefig(outputPlot)
         print('Saved visualisation map as {}'.format(outputPlot))
 
         # Organise routes in timetables
-        table_West = route2Timetable(df_West, fleetsize_West, solutionSet_West)  
-        table_MSP = route2Timetable(df_MSP, fleetsize_MSP, solutionSet_MSP)
+        table_West = route2Timetable(df_West, fleetsize_West, solutionSet_West, None)  
+        table_MSP = route2Timetable(df_MSP, fleetsize_MSP, solutionSet_MSP, None)
         
         # Consolidate both West and MSP timetables
         for j in range(len(table_MSP)):
@@ -225,15 +233,18 @@ def schedule(file,fleet):
 
         # Write consolidated timetable to csv file
         tt_df = pd.DataFrame(table_West)
-        tt_df.to_csv(os.path.join(outputsLogsDir,'raw_Timetable_{}.csv'.format(i)), index=False)
+        tt_df.to_csv(os.path.join(outputsLogsDir,'raw_Timetable_{}.csv'.format(i)), encoding='latin1',index=False)
 
         objFn[i] = [cost1,cost2]
         
         printTable(table_West,f)
         print('Wrote timetable to {}\n'.format(resultsFile))
+
+        if tour_ip != None:
+            break
     
     objFn_df = pd.DataFrame(objFn)
-    objFn_df.to_csv(os.path.join(outputsLogsDir,'objFn.csv'), index=False)
+    objFn_df.to_csv(os.path.join(outputsLogsDir,'objFn.csv'), index=False, encoding='latin1')
 
     f.close()
     print('Finished optimisation.\n')

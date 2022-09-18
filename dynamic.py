@@ -31,10 +31,10 @@ def reader(file,fleetsize):
             except:
                 mainQ = None
         else:
-            mainQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format('order')), encoding='latin1', on_bad_lines='warn')
+            mainQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format('order')), encoding='utf-8', on_bad_lines='warn')
             
     else:
-        mainQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format(file)), encoding='latin1', on_bad_lines='warn')
+        mainQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format(file)), encoding='utf-8', on_bad_lines='warn')
         
 
     # Obtain objective function, can replace later, no need to save to csav
@@ -42,9 +42,12 @@ def reader(file,fleetsize):
 
     # Obtain timetable data, can replace later, no need to save to csav
     timetable = {}
-    for tour in range(len(objFn)):
-        timetable[tour] = pd.read_csv(
-            os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', on_bad_lines='warn')
+    for tour in range(4):
+        try:
+            timetable[tour] = pd.read_csv(
+                os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', on_bad_lines='warn')
+        except:
+            break
 
     return mainQ, timetable, objFn
 
@@ -60,11 +63,18 @@ def estCor(time_now,launch_etd,tour,i,etd,timetable,cur):
 def convert_to_list(timetable, num_of_tours, fleetsize):
     for tour in range (num_of_tours):
         for i in range (fleetsize):
-            for j in range(len(timetable[tour].iloc[0])):
-                try:
-                    timetable[tour].iloc[i,j] = literal_eval(timetable[tour].iloc[i,j])
-                except:
-                    pass                     
+            try:
+                for j in range(len(timetable[tour].iloc[0])):
+                    try:
+                        timetable[tour].iloc[i,j] = literal_eval(timetable[tour].iloc[i,j])
+                    except:
+                        pass   
+            except:
+                for j in range(len(timetable.iloc[0])):
+                    try:
+                        timetable[tour].iloc[i,j] = literal_eval(timetable[tour].iloc[i,j])
+                    except:
+                        pass                   
     return timetable
 
 # Code for dynamic element
@@ -76,7 +86,7 @@ def dynamic(file, fleetsize, time_now):
     launch_route = {}
     launch_location = {}
     launch_etd = {}
-    num_of_tours = len(objFn.iloc[0])
+    num_of_tours = len(timetable)
 
     # Convert list entries in pandas from string to list
     timetable = convert_to_list(timetable, num_of_tours, fleetsize)
@@ -85,6 +95,7 @@ def dynamic(file, fleetsize, time_now):
     for tour in range(num_of_tours):
         launch_route[tour]={}
         launch_etd[tour] = {}
+        launch_location[tour] = {}
         # Running through all launches
         for i in range(fleetsize):
             # Calculating Launch i ETD for all tours
@@ -99,17 +110,17 @@ def dynamic(file, fleetsize, time_now):
                     launch_etd[tour][i].append(timetable[tour].iloc[i,j][2])
 
             # Running through all the estinations of launch departure times to find previous or current destination
-            launch_location[tour] = {}
             for etd in range(len(launch_etd[tour][i])):
                 try:
                     if launch_etd[tour][i][etd] <= time_now:
-                        if etd < len(launch_etd[tour][i])-1:
-                            launch_location[tour][i]=[timetable[tour].iloc[i,etd][0]]
+                        if etd < len(launch_etd[tour][i])-1: # For launches that did not leave
+                            pass
                         else:
                             launch_location[tour][i]=['Returned']
                             etd -= 1
                     else:
                         etd -= 1
+                        launch_location[tour][i]=[timetable[tour].iloc[i,etd][0]]
                         break
                 except:
                     continue
@@ -126,6 +137,7 @@ def dynamic(file, fleetsize, time_now):
             if (540 + 150 * tour) <= time_now <= (540 + 150 * (tour+1)): 
                 # Calculate estimated coordinates
                 cur = launch_location[tour][i][0]
+
                 if cur == 'Returned': # Check if launch has returned, if yes, append port coordinates
                     launch_location[tour][i].append(Locations[timetable[tour].iloc[i,0][0]])
                 else:
@@ -137,8 +149,9 @@ def dynamic(file, fleetsize, time_now):
                 if mainQ is not None:
                     if (vessel != 'Port West') and (vessel != 'Port MSP') and (vessel != 'Returned'):
                         for v in launch_route[tour][i]:
-                            mainQ = mainQ[mainQ.Zone != v]
-                            mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), index=False)
+                            b_in = mainQ[(mainQ.Zone == v)&(mainQ.Start_TW<=time_now)&(mainQ.End_TW>=time_now)].index
+                            mainQ = mainQ.drop(b_in)
+                            mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='latin1', index=False)
                     else:
                         pass
                 else:
@@ -146,28 +159,27 @@ def dynamic(file, fleetsize, time_now):
             else:
                 pass
 
-        
             #print(timetable[tour])  
         #print('\nLaunch location for tour {} is: '.format(tour), launch_location) 
         #print('\nLaunch_etd is: ', launch_etd)
-        #print('\nLaunch route is: ', launch_route)
+        # print('\nLaunch route is: ', launch_route)
         #print('\nMainQ is: ', mainQ)
 
-        # Convert min in timetable to hr
-        for tour in range (num_of_tours):
-            for i in range(fleetsize):
-                for j in range(len(timetable[tour].iloc[i])):
-                    try:    
-                        for k in range(3):
-                            try:
-                                t = timetable[tour].iloc[i,j][k]
-                                hr = str(t // 60).rjust(2,'0')
-                                m = str(t % 60).rjust(2,'0')
-                                timetable[tour].iloc[i,j][k] = ("{}:{}".format(hr,m))
-                            except:
-                                continue
-                    except:
-                        continue
+    # Convert min in timetable to hr
+    for tour in range (num_of_tours):
+        for i in range(fleetsize):
+            for j in range(len(timetable[tour].iloc[i])):
+                try:    
+                    for k in range(3):
+                        try:
+                            t = timetable[tour].iloc[i,j][k]
+                            hr = str(t // 60).rjust(2,'0')
+                            m = str(t % 60).rjust(2,'0')
+                            timetable[tour].iloc[i,j][k] = ("{}:{}".format(hr,m))
+                        except:
+                            continue
+                except:
+                    continue
 
     return timetable, launch_location, launch_etd, launch_route
 
@@ -182,7 +194,7 @@ def main():
     while run_loop == 1:
         file,fleetsize = inputs()
         # Run schedule.py optimiser
-        #schedule(file,fleetsize)
+        #schedule(file,fleetsize,None)
 
         # Dynamic analysis
         dynamic(file,fleetsize,time_now)

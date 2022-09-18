@@ -5,9 +5,40 @@
 {% endblock %}
 
 {% block body %}
-<div class="content">
+<div class="container text-center">
     <h1 style="text-align: center">Ferry Scheduler Home</h1>
-
+    <br>
+    <div class="row">
+        Welcome to our Ferry Scheduler booking system! Here you can check the timetable for your ferry and it's route.
+        You can also manage your bookings under the Bookings tab. <br> We look forward to serving you! Wishing you fair winds and following seas.
+    </div>
+    <br>
+    <div class="row">
+        <h2>Departure Information</h2>
+        <table class="table">
+            <tr>
+                <th>Ferry No.</th>
+                <th>Pier</th>
+                <th>Status</th>
+            </tr>
+            {% for launch in launch_route %}
+                <tr>
+                    <td>{{launch+1}}</td>
+                    {% if launch_route[launch]|length == 2 %}
+                        <td>N.A.</td>
+                        <td>N.A.</td>
+                    {% else %}
+                        <td>{{timetable.iloc[launch,0][0]}}</td>
+                        <td>Departing</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <br>
+    <div class="row">
+        <img class="img-fluid" src="static/img/ferrylogo.png">
+    </div>
 </div>
 
 {% endblock %}
