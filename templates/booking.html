@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block body %}
+<div id="cover-spin"></div>
 <form action="{{ url_for('add_ten') }}" method="POST">
     <button class="btn btn-primary" type="submit">+5 min</button>
 </form>
@@ -35,7 +36,7 @@
                     <td>
                         <form action="{{ url_for('delete') }}" method="POST" onsubmit="return confirm('Do you really want delete this booking?');">
                             <input type="hidden" name="bookingid" value={{i}}>
-                            <button type="submit" class="btn btn-danger" name="delete" >Delete</button>
+                            <button type="submit" class="btn btn-danger" name="delete" onclick="$('#cover-spin').show(0)">Delete</button>
                         </form>
                     </td>
                 </tr>

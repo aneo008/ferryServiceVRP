@@ -72,7 +72,7 @@ def convert_to_list(timetable, num_of_tours, fleetsize):
             except:
                 for j in range(len(timetable.iloc[0])):
                     try:
-                        timetable[tour].iloc[i,j] = literal_eval(timetable[tour].iloc[i,j])
+                        timetable.iloc[i,j] = literal_eval(timetable.iloc[i,j])
                     except:
                         pass                   
     return timetable
@@ -172,7 +172,7 @@ def dynamic(file, fleetsize, time_now):
                 try:    
                     for k in range(3):
                         try:
-                            t = timetable[tour].iloc[i,j][k]
+                            t = int(timetable[tour].iloc[i,j][k])
                             hr = str(t // 60).rjust(2,'0')
                             m = str(t % 60).rjust(2,'0')
                             timetable[tour].iloc[i,j][k] = ("{}:{}".format(hr,m))

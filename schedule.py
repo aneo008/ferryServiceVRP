@@ -86,14 +86,20 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         temp_arrival = []
         temp_departure = []
 
-        if df['Port'][0]=='West':
-            temp_location.append('Port West')
+        if launchlocation == None:
+            if df['Port'][0]=='West':
+                temp_location.append('Port West')
+            else:
+                temp_location.append('Port MSP')
         else:
-            temp_location.append('Port MSP')
-            
+            if df['Zone'][len(links[i])]=='Port West':
+                temp_location.append('Port West')
+            else:
+                temp_location.append('Port MSP')
+
         temp_arrival.append('NA') # Departure only (First Node)
         temp_departure.append(start_time)
-        last_time = start_time
+        last_time = int(start_time)
 
         # Tracks the location, arrival and departure times for each row
         for j in range(len(links[i])):
@@ -103,15 +109,19 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
                 temp_arrival.append(travel_time+last_time)
                 temp_departure.append(travel_time+df['Demand'][links[i][j]]+last_time)
                 last_time += travel_time+df['Demand'][links[i][j]]
+
+        if launchlocation == None:
+            if df['Port'][0]=='West':
+                temp_location.append('Port West')
             else:
-                if df['Port'][0]=='West':
-                    temp_location.append('Port West')
-                else:
-                    temp_location.append('Port MSP')       
-                travel_time = round(distMatrix[links[i][j]][links[i][j-1]]/0.463)
-                temp_arrival.append(travel_time+last_time)
-                temp_departure.append('NA') # Arrival Only (Last Node)
-                last_time += travel_time+df['Demand'][links[i][j]]
+                temp_location.append('Port MSP')
+        else:
+            temp_departure = temp_departure[:-1]
+                
+        travel_time = round(distMatrix[links[i][j]][links[i][j-1]]/0.463)
+        temp_arrival.append(travel_time+last_time)
+        last_time += travel_time+df['Demand'][links[i][j]]
+        temp_departure.append('NA') # Arrival Only (Last Node)
 
         locations.append(temp_location)
         arrival_time.append(temp_arrival)
@@ -267,7 +277,7 @@ def main():
     file = args.file
     fleet = int(args.fleetsize)
 
-    schedule(file,fleet)
+    schedule(file,fleet,None)
     
     return
 

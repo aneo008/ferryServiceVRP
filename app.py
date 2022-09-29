@@ -12,7 +12,7 @@ from utils import Locations
 global file, fleetsize
 file = 'order'
 fleetsize = 5
-time_start_epoch = time.time()
+time_start_epoch = int(time.time())
 
 app = Flask(__name__)
 
@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 # Note this does not account for after 2359hr
 def t_now():
-    return 540 + time.time() - time_start_epoch
+    return 540 + int(time.time()) - time_start_epoch
     
 def time_convert(t):
     hr = str(round(t) // 60).rjust(2,'0')
@@ -101,24 +101,18 @@ def delete():
     raw_Timetable = convert_to_list(pd.read_csv(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(tour)),encoding='latin1'),1,fleetsize)
 
     # Remove booking from ogQ - tracks all bookings served and to be served
-    if not os.path.exists(os.path.join(dirName, 'datasets/ogQ.csv')):
-        ogQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format(file)), encoding='utf-8', on_bad_lines='warn')
-    else:
+    if os.path.exists(os.path.join(dirName, 'datasets/ogQ.csv')):
         ogQ = pd.read_csv(os.path.join(dirName, 'datasets/ogQ.csv'), encoding='utf-8', on_bad_lines='warn')
+    else:
+        ogQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format(file)), encoding='utf-8', on_bad_lines='warn')
     ogQ = ogQ[ogQ.Order_ID != b_id]
     ogQ.to_csv(os.path.join(dirName, 'datasets/ogQ.csv'), encoding='utf-8', index=False)
 
     # Remove booking from mainQ - tracks all bookings to be served
     mainQ=mainQ[mainQ.Order_ID != b_id]
-    mainQ.to_csv(os.path.join(dirName, 'outputs/logs/mainQ.csv'), encoding='latin1',index=False)
-    
-    # Remove booking from raw_Timetable
-    for rd in range(len(raw_Timetable.iloc[launch])):
-        try:
-            if raw_Timetable.iloc[launch,rd][0] == zone:
-                raw_Timetable.drop([rd])
-        except:
-            continue
+
+    # Remove booking from route
+    launch_route[tour][launch].remove(zone)
 
     # If deleted request is from upcoming tour
     if tour > cur_tour():
@@ -127,7 +121,7 @@ def delete():
     elif (launch_location[tour][launch][1] == Locations["Port West"]) or (launch_location[tour][launch][1] == Locations["Port MSP"]):
         # Get route for launches that have not left
         not_left = []
-        for l in fleetsize:
+        for l in range(fleetsize):
             if (launch_location[tour][l][1] == Locations["Port West"]) or (launch_location[tour][l][1] == Locations["Port MSP"]) or (len(launch_route[tour][l])==2):
                 not_left.append(l)
         mainQ_tour = mainQ.loc[(mainQ['Start_TW']<=540+tour*150)&(mainQ['End_TW'>=540+(tour+1)*150])]
@@ -143,8 +137,11 @@ def delete():
                     raw_Timetable.iloc[l2,j] = r2t[0][j]
                 except:
                     raw_Timetable.iloc[l2,j] = ''
+        
+        raw_Timetable.to_csv(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1',index=False)
 
         # Replace map for routes that have not left
+        
         
     # If launch has left
     else:
@@ -152,26 +149,36 @@ def delete():
         df = pd.DataFrame([[0, 0, 'launchlocation', 0, t_now(), t_now()+150]],columns=mainQ.columns) 
         edge = []
         for r in launch_route[tour][launch]:
-            try:
-                df = pd.concat([df,mainQ[mainQ.Zone == r]])
+            if (r == 'Port West') or (r == 'Port MSP'):
+                r_port = r
+            else:
+                df = pd.concat([df,ogQ[(ogQ.Zone == r)&(ogQ.Start_TW>=540+150*(tour))&(ogQ.End_TW<=540+150*(tour+1))]])
                 edge.append(r)
-            except:
-                continue
+        edge.append(r_port)
+        r_port_df = pd.DataFrame([['return', 0, r_port, 0, t_now(), t_now()+150]],columns=mainQ.columns) 
+        df = pd.concat([df,r_port_df])
         df = df.reset_index(drop=True)
 
         launchlocation = {}
         launchlocation[0] = launch_location[tour][launch]
         launchlocation[1] = edge
         _, solutionSet, _, _, _, _, _,_ = calculateRoute(len(df)-1, 1, df,launchlocation, False)
-        r2t = route2Timetable(df, 1, solutionSet, launchlocation)
+        if solutionSet == None:
+            return render_template('500.html'), 500
+        else:
+            r2t = route2Timetable(df, 1, solutionSet, launchlocation)
 
+        # Replace with new timetable
         for j in range(len(raw_Timetable)):
             try:
-                raw_Timetable.iloc[rd,j] = r2t[0][j]
+                raw_Timetable.iloc[launch,j] = r2t[0][j]
             except:
-                raw_Timetable.iloc[rd,j] = ''
+                raw_Timetable.iloc[launch,j] = ''
     
         raw_Timetable.to_csv(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1',index=False)
+
+
+    mainQ.to_csv(os.path.join(dirName, 'outputs/logs/mainQ.csv'), encoding='latin1',index=False)
 
     return redirect('/booking')
 
@@ -181,11 +188,15 @@ def add_ten():
     time_start_epoch -= 5
     return redirect ('/booking')
 
+@app.route('/newbooking')
+def newbooking():
+    return render_template("newbooking.html",time_now=time_convert(t_now()),Locations=Locations)
+
 @app.route("/restart",methods=['POST'])
 def restart():
     schedule(file, fleetsize,None)
     global time_start_epoch
-    time_start_epoch = time.time()
+    time_start_epoch = int(time.time())
     delete_Q()
     return redirect('/')
 

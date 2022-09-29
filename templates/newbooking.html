@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>New Booking</title>
+{% endblock %}
+
+{% block body %}
+<h1>Make a New Booking</h1><br>
+<form action="#" class="row g-3 needs-validation" novalidate>
+    <div class="col-md-4">
+        <label for="validationCustom01" class="form-label">Select Request Type</label>
+        <select name="request" id="validationCustom01" class="form-select form-select-sm" required>
+            <option selected disabled value="">Request Type</option>
+            <option value="1">Linehaul</option>
+            <option value="2">Backhaul</option>
+        </select>
+        <div class="invalid-feedback">
+            Please select a request type.
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="validationCustom02" class="form-label">Select Zone</label>
+        <select name="zone" id="validationCustom02" class="form-select form-select-sm" required>
+            <option selected disabled value="">Zone</option>
+            {% for z in Locations %}
+                {% if z!="Port MSP" and z!="Port West" %}
+                    <option value={{z}}>{{z}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <div class="invalid-feedback">
+            Please select a zone.
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label for="validationCustom03" class="form-label">Select number of passengers</label>
+        <select name="passengers" class="form-select form-select-sm" required>
+            <option selected disabled value="">Passengers</option>
+            {% for i in range(10) %}
+                <option value={{i+1}}>{{i+1}}</option>
+            {% endfor %}
+        </select>
+        <div class="invalid-feedback">
+            Please indicate number of passengers.
+        </div>
+    </div>
+    <div class="col-12">
+        <button id="submit" type="submit" class="btn btn-primary" onclick="$('#cover-spin').show(0)">Submit</button>
+    </div>
+</form>
+<script>
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+</script>
+
+{% endblock %}
