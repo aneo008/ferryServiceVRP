@@ -28,7 +28,7 @@
         <br/>
         <div class="container">
             <form action="{{ url_for('restart') }}" method="POST">
-                <button class="btn btn-warning" type="submit" onclick="loading();">Restart</button>
+                <button id="restart" class="btn btn-warning" type="submit" onclick="loading();">Restart</button>
             </form>
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <div id="printtimenow">
@@ -37,10 +37,18 @@
             {% block body %}{% endblock %}
             <script>
                 $(document).ready(function () {
-                    setInterval(function () {
+                    intervalID = setInterval(function () {
                         $("#printtimenow").load(location.href + " #printtimenow");
                     }, 1000);
                 });
+                
+                function stop(){
+                    clearInterval(intervalID)
+                };
+
+                document.getElementById("restart").addEventListener("click", stop);
+                document.getElementById("delete").forEach(this.addEventListener("click", stop));
+                document.getElementById("submit").addEventListener("click", stop);
             </script>
         </div>
     </div>

@@ -15,7 +15,7 @@ def drawSolution(solutionSet, df, ax):
 
 def drawSolution2(solutionSet, df, ax, tour):
     img = plt.imread("Port_Of_Singapore_Anchorages_Chartlet.png")
-    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/plots/dynamic')
+    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/img')
     
     fig, ax = plt.subplots()
     ax.imshow(img)

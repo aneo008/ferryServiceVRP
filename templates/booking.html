@@ -36,7 +36,11 @@
                     <td>
                         <form action="{{ url_for('delete') }}" method="POST" onsubmit="return confirm('Do you really want delete this booking?');">
                             <input type="hidden" name="bookingid" value={{i}}>
-                            <button type="submit" class="btn btn-danger" name="delete" onclick="$('#cover-spin').show(0)">Delete</button>
+                            {% if (mainQ2[i] < 540+(tour+1)*150) and (mainQ.iloc[i,1]==1) %}
+                                <button class="btn btn-secondary" disabled>Delete</button>
+                            {% else %}
+                                <button id="delete" type="submit" class="btn btn-danger" name="delete" onclick="$('#cover-spin').show(0)">Delete</button>
+                            {% endif %}
                         </form>
                     </td>
                 </tr>

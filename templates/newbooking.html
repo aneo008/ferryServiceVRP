@@ -5,8 +5,9 @@
 {% endblock %}
 
 {% block body %}
+<div id="cover-spin"></div>
 <h1>Make a New Booking</h1><br>
-<form action="#" class="row g-3 needs-validation" novalidate>
+<form action="{{ url_for('addbooking') }}" method="POST" class="row g-3 needs-validation" novalidate>
     <div class="col-md-4">
         <label for="validationCustom01" class="form-label">Select Request Type</label>
         <select name="request" id="validationCustom01" class="form-select form-select-sm" required>
@@ -34,9 +35,9 @@
     </div>
     <div class="col-md-4">
         <label for="validationCustom03" class="form-label">Select number of passengers</label>
-        <select name="passengers" class="form-select form-select-sm" required>
+        <select name="passengers" id="validationCustom03" class="form-select form-select-sm" required>
             <option selected disabled value="">Passengers</option>
-            {% for i in range(10) %}
+            {% for i in range(14) %}
                 <option value={{i+1}}>{{i+1}}</option>
             {% endfor %}
         </select>
@@ -44,11 +45,25 @@
             Please indicate number of passengers.
         </div>
     </div>
+    <div class="col-md-4">
+        <label for="validationCustom04" class="form-label">Select Time Window</label>
+        <select name="timewindow" id="validationCustom04" class="form-select form-select-sm" required>
+            <option selected disabled value="">Time Window</option>
+            <option value=0>09:00 - 11:30</option>
+            <option value=1>11:30 - 14:00</option>
+            <option value=2>14:00 - 16:30</option>
+            <option value=3>16:30 - 19:00</option>
+        </select>
+        <div class="invalid-feedback">
+            Please select time window for request
+        </div>
+    </div>
     <div class="col-12">
         <button id="submit" type="submit" class="btn btn-primary" onclick="$('#cover-spin').show(0)">Submit</button>
     </div>
 </form>
 <script>
+    // Bootstrap validation script
     (function () {
         'use strict'
 
@@ -68,6 +83,14 @@
                 }, false)
             })
         })()
+
+        // Disable time window script
+        var cur_tour = "{{cur_tour}}";
+        document.querySelectorAll("#validationCustom04 option").forEach(opt => {
+                if (opt.value < cur_tour) {
+                    opt.disabled = true;
+                }
+            });
 </script>
 
 {% endblock %}

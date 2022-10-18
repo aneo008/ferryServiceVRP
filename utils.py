@@ -28,6 +28,38 @@ Edges = [('Port West', 'East Jurong', 3.6), ('East Jurong', 'West Jurong', 4.4),
 MapGraph = nx.Graph()
 MapGraph.add_weighted_edges_from(Edges)
 
+def reset_edges():
+    Edges = [('Port West', 'East Jurong', 3.6), ('East Jurong', 'West Jurong', 4.4), ('West Jurong', 'Z30', 7),
+             ('Sinki', 'Z30', 7.3), ('East Jurong',
+                                     'Sinki', 8), ('West Kepple', 'Sinki', 10),
+             ('Sinki', 'Z29', 7), ('Z29', 'Z28',
+                                   2.6), ('Z28', 'Z27', 2.6), ('Z27', 'Z26', 1.3),
+             ('Z25', 'Sinki', 0.8), ('Z25', 'Z24', 2.7), ('Z24', 'Z23', 3),
+             ('Z23', 'Z22', 1.8), ('West Kepple', 'Z20',
+                                   5), ('West Kepple', 'Z19', 10), ('West Kepple', 'Z18', 10),
+             ('West Kepple', 'Jong', 3.3), ('Jong', 'Z20',
+                                            1.5), ('Jong', 'Z21', 3.5), ('Jong', 'Z17', 5.5),
+             ('Jong', 'Southern', 9.3), ('Z20', 'Z19', 2), ('Z20',
+                                                            'Z21', 2), ('Z19', 'Z18', 3), ('Z18', 'Z17', 3),
+             ('Z17', 'Z21', 3), ('Z17', 'Sisters', 2), ('Sisters',
+                                                        'Southern', 1.7), ('Southern', 'East Kepple', 5.2),
+             ('Z16', 'East Kepple', 2.4), ('Z16', 'Z14',
+                                           2.4), ('Z14', 'Z15', 2.8), ('Z15', 'East Kepple', 1.6),
+             ('Eastern Corridor', 'Z15', 2), ('Eastern Corridor',
+                                              'Z13', 2), ('Z13', 'Z12', 1.6),
+             ('Z12', 'Eastern Corridor', 1.6), ('Z12', 'Eastern',
+                                                4), ('Z13', 'Eastern', 2), ('Z14', 'Eastern', 3),
+             ('Z11', 'Eastern', 3), ('Z10', 'Eastern',
+                                     5), ('Z11', 'Z10', 2), ('Z10', 'Z09', 2.5),
+             ('Z09', 'Z08', 1), ('Z10', 'Z05', 7), ('Z09',
+                                                    'Z06', 6), ('Z08', 'Z07', 5), ('Z07', 'Z06', 1),
+             ('Z06', 'Z05', 2.5), ('Z05', 'Z04', 8), ('Z06',
+                                                      'Z04', 7.8), ('Z03', 'Z04', 2), ('Z03', 'Z02', 3.5),
+             ('Z02', 'Z01', 2.3), ('Port MSP', 'Z14', 0.4), ('Sinki',
+                                                             'Z28', 7.5), ('Z24', 'East Jurong', 10.2),
+             ('Z27', 'Z22', 4), ('Z30', 'Z29', 4), ('Z24', 'Z22', 6), ('Z22', 'Jong', 10)]
+    return Edges
+
 # Compute distance matrix
 def computeDistMatrix(df, map):
     numOfCustomers = df.shape[0]
@@ -46,11 +78,13 @@ def computeDistMatrix(df, map):
 def computeDistMatrix2(df, launchlocation):
     global Locations, Edges
     
+    if "launchlocation" in Locations:
+        Edges = reset_edges()
     numOfCustomers = df.shape[0]
     distMatrix = np.zeros((numOfCustomers+2, numOfCustomers+2))
     Locations["launchlocation"] = launchlocation[0][1]
 
-    # Calculate and create edges between launch location and various zones
+    # Calculate and create edges between launch Locations and various zones
     for edge in launchlocation[1]:
         # Divided by 30 to estimate edge length in Edges. Obtained from averaging dist and edge_tuple distances
         dist = np.sqrt(np.square(Locations["launchlocation"][0]-Locations[edge][0])+np.square(Locations["launchlocation"][1]-Locations[edge][1]))/30

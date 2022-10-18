@@ -49,9 +49,11 @@ def printTable(table,f):
 def route2Timetable(df, fleetsize, solutionSet, launchlocation):
     if launchlocation == None:
         distMatrix = computeDistMatrix(df, MapGraph)
+        start_time = df.iloc[0,4] # Start Time
     else:
         distMatrix = computeDistMatrix2(df, launchlocation)
-    start_time = df.iloc[0,4] # Start Time
+        start_time = launchlocation[2] # Start Time
+    
     route_set=[] # Set of routes
     links = [] # List of edges in all routes
     locations = [] # Locations column
@@ -86,12 +88,12 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         temp_arrival = []
         temp_departure = []
 
-        if launchlocation == None:
+        try: #if launchlocation == None:
             if df['Port'][0]=='West':
                 temp_location.append('Port West')
             else:
                 temp_location.append('Port MSP')
-        else:
+        except:
             if df['Zone'][len(links[i])]=='Port West':
                 temp_location.append('Port West')
             else:
@@ -213,8 +215,15 @@ def schedule(file,fleet,tour_ip):
         fig, ax = plt.subplots()
         ax.imshow(img)
 
-        # Pre-optimisation step
-        df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
+        # Pre-optimisation step. If df is empty, delete raw_Timetable
+        try:
+            df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
+        except:
+            rawtt_path = os.path.join(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(i)))
+            if os.path.exists(rawtt_path):
+                os.remove(rawtt_path)
+            break
+        
 
         # Perform LP
         route1, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, None, False) 
@@ -229,7 +238,7 @@ def schedule(file,fleet,tour_ip):
 
         # Save visualisations in a png file
         # outputPlot = os.path.join(outputsPlotsDir,file + '_' + 'Tour' + str(i+1) + '_schedule.png')
-        outputPlot = os.path.join(dirName,'static/order_Tour' + str(i+1) + '_schedule.png')
+        outputPlot = os.path.join(dirName,'static/img/order_Tour' + str(i+1) + '_schedule.png')
         fig.savefig(outputPlot)
         print('Saved visualisation map as {}'.format(outputPlot))
 

@@ -89,6 +89,7 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, launchlocation, log=True):
         # Modified df, different from original. If calculating from launch location, have to include port as last point and change return constraint
         mdl.add_constraints(mdl.sum(x[i, numOfCustomers, v] for i in Cc) == 1 for v in numOfVehicles)
         mdl.add_constraints(mdl.sum(x[numOfCustomers, i, v] for i in Cc) == 0 for v in numOfVehicles)
+        mdl.add_constraints(mdl.sum(x[i, 0, v]for i in Cc) == 0 for v in numOfVehicles)
 
     # All nodes must only be visited once by one launch
     mdl.add_constraints(mdl.sum(x[i, j, v] for i in Cc for v in numOfVehicles if j != i) == 1 for j in C)
@@ -98,7 +99,7 @@ def calculateRoute(numOfCustomers, numOfVehicles, df, launchlocation, log=True):
         mdl.add_constraints((mdl.sum(x[i, b, v] for i in Cc if i != b) - mdl.sum(x[b, j, v] for j in Cc if b != j)) == 0 for b in C for v in numOfVehicles)
     else:
         # Modified to ignore first and last node (ie non circular route)
-        mdl.add_constraints((mdl.sum(x[i, b, v] for i in Cc if i != b) - mdl.sum(x[b, j, v] for j in Cc if b != j)) == 0 for b in C[1:-1] for v in numOfVehicles)
+        mdl.add_constraints((mdl.sum(x[i, b, v] for i in Cc if i != b) - mdl.sum(x[b, j, v] for j in Cc if b != j)) == 0 for b in C[0:-1] for v in numOfVehicles)
 
     # Launch's initial load equals to the total delivery demands in its route
     mdl.add_constraints((load[0, v] == mdl.sum(x[i, j, v]*d[j] for i in Cc for j in C if i != j)) for v in numOfVehicles)

@@ -2,7 +2,7 @@ deap==1.3.1
 docplex==2.23.222
 matplotlib==3.5.3
 networkx==2.6.3
-numpy==1.21.5
-pandas==1.4.4
-cplex
-flask
+numpy==1.23.3
+pandas==1.5.0
+cplex==22.1.0.0
+flask==2.2.2

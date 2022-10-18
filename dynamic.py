@@ -38,7 +38,7 @@ def reader(file,fleetsize):
         
 
     # Obtain objective function, can replace later, no need to save to csav
-    objFn = pd.read_csv(os.path.join(dirName, 'outputs/logs/objFn.csv'), encoding='latin1', on_bad_lines='warn')
+    #objFn = pd.read_csv(os.path.join(dirName, 'outputs/logs/objFn.csv'), encoding='latin1', on_bad_lines='warn')
 
     # Obtain timetable data, can replace later, no need to save to csav
     timetable = {}
@@ -49,7 +49,7 @@ def reader(file,fleetsize):
         except:
             break
 
-    return mainQ, timetable, objFn
+    return mainQ, timetable
 
 # Estimate coordinates of launch
 def estCor(time_now,launch_etd,tour,i,etd,timetable,cur):
@@ -80,8 +80,8 @@ def convert_to_list(timetable, num_of_tours, fleetsize):
 # Code for dynamic element
 def dynamic(file, fleetsize, time_now):
     # Run optimiser
-    mainQ,timetable,objFn = reader(file,fleetsize)
-
+    mainQ,timetable = reader(file,fleetsize)
+    
     # To change when implement server to detect for change rather than looping
     launch_route = {}
     launch_location = {}
@@ -99,7 +99,7 @@ def dynamic(file, fleetsize, time_now):
         # Running through all launches
         for i in range(fleetsize):
             # Calculating Launch i ETD for all tours
-            launch_etd[tour][i] = []    
+            launch_etd[tour][i] = []
             for j in range(len(timetable[tour].iloc[0])):
                 if timetable[tour].iloc[i,j][2] == 'NA':
                     launch_etd[tour][i].append(timetable[tour].iloc[i,j][1]) # ETA back to port
@@ -144,20 +144,15 @@ def dynamic(file, fleetsize, time_now):
                     est_coor = estCor(time_now,launch_etd,tour,i,etd,timetable,cur)
                     launch_location[tour][i].append(est_coor)
             
-                # Removing bookings from mainQ for launches that left
-                vessel = launch_location[tour][i][0]
-                if mainQ is not None:
-                    if (vessel != 'Port West') and (vessel != 'Port MSP') and (vessel != 'Returned'):
-                        for v in launch_route[tour][i]:
-                            b_in = mainQ[(mainQ.Zone == v)&(mainQ.Start_TW<=time_now)&(mainQ.End_TW>=time_now)].index
-                            mainQ = mainQ.drop(b_in)
-                            mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='latin1', index=False)
-                    else:
-                        pass
-                else:
-                    pass        
-            else:
-                pass
+            # Removing bookings from mainQ for zones served
+            if mainQ is not None:
+                for v in range(len(launch_route[tour][i])):
+                    # Visualise which booking is deleted, debugging purposes
+                    #if not mainQ[(mainQ.Zone == launch_route[tour][i][v]) & (mainQ.End_TW < time_now) & (launch_etd[tour][i][v] <= time_now)].empty:
+                        #print(mainQ[(mainQ.Zone == launch_route[tour][i][v]) & (mainQ.End_TW < time_now) & (launch_etd[tour][i][v] <= time_now)])
+                    b_in = mainQ[(mainQ.Zone == launch_route[tour][i][v])&(mainQ.End_TW < time_now)&(launch_etd[tour][i][v]<=time_now)].index
+                    mainQ = mainQ.drop(b_in)
+                    mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='latin1', index=False)
 
             #print(timetable[tour])  
         #print('\nLaunch location for tour {} is: '.format(tour), launch_location) 
