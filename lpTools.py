@@ -15,7 +15,7 @@ def drawSolution(solutionSet, df, ax):
                  Locations[zone_e][1]-Locations[zone_s][1], 
                  head_width=10, head_length=10, color = Color[launch_id])
 
-def drawSolution2(raw_Timetable, tour):
+def drawSolution2(raw_Timetable, tour, draw):
     img = plt.imread("Port_Of_Singapore_Anchorages_Chartlet.png")
     outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/img/')
     
@@ -36,10 +36,14 @@ def drawSolution2(raw_Timetable, tour):
                         head_width=10, head_length=10, color = Color[launch_id])
             except:
                 break
+    
+    if draw:
+        # Save visualisations in a png file
+        outputPlot = os.path.join(outputsPlotsDir,'order_Tour' + str(tour+1) + '_schedule.png')
+        fig.savefig(outputPlot)
 
-    # Save visualisations in a png file
-    outputPlot = os.path.join(outputsPlotsDir,'order_Tour' + str(tour+1) + '_schedule.png')
-    fig.savefig(outputPlot)
+    else:
+        return fig,ax
 
 # Print each launch's route from solution set
 def printRoutes(solutionSet):

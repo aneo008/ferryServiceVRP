@@ -4,12 +4,10 @@ import time
 from schedule import schedule
 from dynamic import dynamic, reader
 from utils import Locations
-from appTools import time_convert,delete_Q,deleteBooking,addBookingFn
+from appTools import time_convert,delete_Q,deleteBooking,addBookingFn,drawLaunch,file,fleetsize
 
 # Default global variables
-global file, fleetsize, time_start_epoch
-file = 'order'
-fleetsize = 5
+global time_start_epoch
 time_start_epoch = int(time.time())
 
 # Run Scheduler
@@ -39,6 +37,7 @@ def timetable():
 @app.route('/location', methods=['POST','GET'])
 def location():
     _,launch_location,launch_etd,_ = dynamic('mainQ',fleetsize,t_now())
+    drawLaunch(launch_location, cur_tour())
     return render_template ("location.html",time_now=time_convert(t_now()),launch_location=launch_location,launch_etd = launch_etd)
 
 @app.route('/booking', methods=['POST','GET'])

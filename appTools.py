@@ -1,6 +1,6 @@
 import os
 import shutil
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
 
@@ -71,6 +71,7 @@ def delete_Q():
     for i in range(4):
         map_path = os.path.join(
             img_path, 'order_Tour{}'.format(i+1) + '_schedule.png')
+        
         shutil.copy(anchorage_map, map_path)
 
 def deleteBooking(id,t_now,cur_tour):
@@ -134,7 +135,7 @@ def deleteBooking(id,t_now,cur_tour):
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', index=False)
 
         # Replace map for routes that have not left
-        drawSolution2(raw_Timetable, tour)
+        drawSolution2(raw_Timetable, tour, True)
 
     # If launch has left
     else:
@@ -178,7 +179,7 @@ def deleteBooking(id,t_now,cur_tour):
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', index=False)
 
         # Replace map for routes that left
-        drawSolution2(raw_Timetable, tour)
+        drawSolution2(raw_Timetable, tour, True)
 
     mainQ.to_csv(os.path.join(dirName, 'outputs/logs/mainQ.csv'),
                  encoding='latin1', index=False)
@@ -356,7 +357,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1', index=False)
 
         # Replace map
-        drawSolution2(raw_Timetable, timewindow)
+        drawSolution2(raw_Timetable, timewindow, True)
 
     # Save as mainQ, let dynamic.py handle mainQ dropping
     ogQ2.to_csv(os.path.join(dirName, 'outputs/logs/mainQ.csv'),
@@ -367,15 +368,17 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
     return True
 
 def drawLaunch(launch_location, tour):
-    outputsPlotsDir = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'static/img/')
-    outputPlot = os.path.join(
-        outputsPlotsDir, 'order_Tour' + str(tour+1) + '_schedule.png')
-    img = plt.imread(outputPlot)
-    fig, ax = plt.subplots()
-    ax.imshow(img)
-    for i in launch_location[tour]:
-        ax.scatter(i[1], marker='x', color='r')
+    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/img/')
+    outputPlot = os.path.join(outputsPlotsDir, 'order_Tour' + str(tour+1) + '_schedule.png')
+    if not os.path.exists(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour))):
+        return
+
+    raw_Timetable = convert_to_list(pd.read_csv(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1'), 1, fleetsize)
+
+    fig, ax = drawSolution2(raw_Timetable, tour, False)
+    for i in range(fleetsize):
+        ax.scatter(launch_location[tour][i][1][0], launch_location[tour][i][1][1], marker='x', color='r')
 
     # Save visualisations in a png file
     fig.savefig(outputPlot)
+    plt.close('all')

@@ -13,44 +13,17 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function () {
-        setInterval(function () {
-            $("#launch").load(location.href + " #launch");
-        }, 1000);
-    });
-</script>
-
-<div class="container text-center">
+<div id="map" class="container text-center">
     <h2>Ferry Routes</h2>
-    <table class="table">
-        <th>Launch</th>
-        <th>Colour</th>
-        <tr>
-            <td>1</td>
-            <td>Blue</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td>Cyan</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Black</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Magenta</td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Red</td>
-        </tr>
-    </table>
+    Launch 1: Blue<br>
+    Launch 2: Cyan<br>
+    Launch 3: Black<br>
+    Launch 4: Magenta<br>
+    Launch 5: Red<br>
     <div class="row">
         <div class="col">
             Tour 1
-            <img src="static/img/order_Tour1_schedule.png" class="img-fluid">
+            <img id="t1" src="static/img/order_Tour1_schedule.png" class="img-fluid">
         </div>
         <div class="col">
             Tour 2
@@ -68,5 +41,17 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+        setInterval(function () {
+            $("#launch").load(location.href + " #launch");
+            $("img").each(function(){
+                var url = $(this).attr("src");
+                $(this).removeAttr("src").attr("src", url);
+            })
+        }, 1000);
+    });
+</script>
 
 {% endblock %}

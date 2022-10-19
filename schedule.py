@@ -269,6 +269,7 @@ def schedule(file,fleet,tour_ip):
             break
 
     f.close()
+    plt.close('all')
     print('Finished optimisation.\n')
 
     # End timer
