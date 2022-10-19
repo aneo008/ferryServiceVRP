@@ -1,5 +1,6 @@
 from utils import Color, Locations
 import matplotlib.pyplot as plt
+import math
 import os
 
 # Visualise solution on anchorage map           
@@ -9,27 +10,35 @@ def drawSolution(solutionSet, df, ax):
         zone_s = df.iloc[solutionSet[i][0], 2]
         zone_e = df.iloc[solutionSet[i][1], 2]
         launch_id = str(solutionSet[i][2])
-        ax.arrow(Locations[zone_s][0], Locations[zone_s][1], \
-            Locations[zone_e][0]-Locations[zone_s][0], Locations[zone_e][1]-Locations[zone_s][1], \
-                head_width=10, head_length=10, color = Color[launch_id])
+        ax.arrow(Locations[zone_s][0], Locations[zone_s][1], 
+                 Locations[zone_e][0]-Locations[zone_s][0], 
+                 Locations[zone_e][1]-Locations[zone_s][1], 
+                 head_width=10, head_length=10, color = Color[launch_id])
 
-def drawSolution2(solutionSet, df, ax, tour):
+def drawSolution2(raw_Timetable, tour):
     img = plt.imread("Port_Of_Singapore_Anchorages_Chartlet.png")
-    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/img')
+    outputsPlotsDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/img/')
     
     fig, ax = plt.subplots()
     ax.imshow(img)
-    for i in range(len(solutionSet)):
-        ax.scatter(Locations[df.iloc[solutionSet[i][0], 2]][0], Locations[df.iloc[solutionSet[i][0], 2]][1], marker='o')
-        zone_s = df.iloc[solutionSet[i][0], 2]
-        zone_e = df.iloc[solutionSet[i][1], 2]
-        launch_id = str(solutionSet[i][2])
-        ax.arrow(Locations[zone_s][0], Locations[zone_s][1], \
-            Locations[zone_e][0]-Locations[zone_s][0], Locations[zone_e][1]-Locations[zone_s][1], \
-                head_width=10, head_length=10, color = Color[launch_id])
+    for i in range(len(raw_Timetable)):
+        for j in range(len(raw_Timetable.loc[i])-1):
+            try:
+                zone_s = raw_Timetable.iloc[i,j][0]
+                zone_e = raw_Timetable.iloc[i,j+1][0]
+                launch_id = str(i+1)
+
+                ax.scatter(Locations[zone_s][0],
+                        Locations[zone_s][1], marker='o')
+                ax.arrow(Locations[zone_s][0], Locations[zone_s][1],
+                        Locations[zone_e][0] - Locations[zone_s][0], 
+                        Locations[zone_e][1] - Locations[zone_s][1],
+                        head_width=10, head_length=10, color = Color[launch_id])
+            except:
+                break
 
     # Save visualisations in a png file
-    outputPlot = os.path.join(outputsPlotsDir,'Tour' + str(tour+1) + '_schedule.png')
+    outputPlot = os.path.join(outputsPlotsDir,'order_Tour' + str(tour+1) + '_schedule.png')
     fig.savefig(outputPlot)
 
 # Print each launch's route from solution set

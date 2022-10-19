@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('SVG')
 import matplotlib.pyplot as plt
 import os
+import shutil
 import pandas as pd
 import time as timer
 
@@ -222,6 +223,11 @@ def schedule(file,fleet,tour_ip):
             rawtt_path = os.path.join(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(i)))
             if os.path.exists(rawtt_path):
                 os.remove(rawtt_path)
+            anchorage_map = os.path.join(
+                dirName, "Port_Of_Singapore_Anchorages_Chartlet.png")
+            map_path = os.path.join(
+                dirName, 'static/img', 'order_Tour{}'.format(i+1) + '_schedule.png')
+            shutil.copy(anchorage_map, map_path)
             break
         
 
@@ -261,9 +267,6 @@ def schedule(file,fleet,tour_ip):
 
         if tour_ip != None:
             break
-    
-    objFn_df = pd.DataFrame(objFn)
-    objFn_df.to_csv(os.path.join(outputsLogsDir,'objFn.csv'), index=False, encoding='latin1')
 
     f.close()
     print('Finished optimisation.\n')

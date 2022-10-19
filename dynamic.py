@@ -35,10 +35,6 @@ def reader(file,fleetsize):
             
     else:
         mainQ = pd.read_csv(os.path.join(dirName, 'datasets/{}.csv'.format(file)), encoding='utf-8', on_bad_lines='warn')
-        
-
-    # Obtain objective function, can replace later, no need to save to csav
-    #objFn = pd.read_csv(os.path.join(dirName, 'outputs/logs/objFn.csv'), encoding='latin1', on_bad_lines='warn')
 
     # Obtain timetable data, can replace later, no need to save to csav
     timetable = {}

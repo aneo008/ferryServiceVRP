@@ -8,10 +8,10 @@
 <h1>Booking Request Status</h1>
 <p>Your {{ user_ip[0] }} request at Zone {{ user_ip[1] }} for {{ user_ip[2] }} passengers scheduled for {{ user_ip[3] }} was ...</p><br>
 {% if success == True %}
-    Successful<br>
+    <p style="color:green;">Successful</p><br>
     <a href="{{url_for('index')}}">Back to home</a>
 {% else %}
-    Unsuccessful. Please try again.<br>
+    <p style="color:red;">Unsuccessful</p>. Please try again.<br>
     <a href="{{url_for('newbooking')}}">Return to make a new booking</a>
 {% endif %}
 
