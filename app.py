@@ -4,14 +4,14 @@ import time
 from schedule import schedule
 from dynamic import dynamic, reader
 from utils import Locations
-from appTools import time_convert,delete_Q,deleteBooking,addBookingFn,drawLaunch,file,fleetsize
+from appTools import time_convert,delete_Q,deleteBooking,addBookingFn,drawLaunch,capacity,file,fleetsize
 
 # Default global variables
 global time_start_epoch
 time_start_epoch = int(time.time())
 
 # Run Scheduler
-# schedule(file, fleetsize, None)
+#schedule(file, fleetsize, None)
 
 app = Flask(__name__)
 
@@ -32,6 +32,7 @@ def index():
 @app.route('/timetable', methods=['POST','GET'])
 def timetable():
     timetable,_,_, launch_route = dynamic('mainQ',fleetsize,t_now())
+    timetable = capacity(timetable,launch_route)
     return render_template("timetable.html", timetable=timetable, launch_route=launch_route, time_now=time_convert(t_now()))
 
 @app.route('/location', methods=['POST','GET'])
@@ -43,7 +44,7 @@ def location():
 @app.route('/booking', methods=['POST','GET'])
 def booking():
     dynamic('mainQ',fleetsize,t_now())
-    mainQ,_ = reader('mainQ', fleetsize)
+    mainQ,_ = reader('mainQ')
     mainQ2=[]
     if mainQ is not None:
         for i in range(len(mainQ)):

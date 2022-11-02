@@ -24,6 +24,7 @@
 								<th>Zone</th>
 								<th>ETA</th>
 								<th>ETD</th>
+								<th>Capacity</th>
 							</tr>
 						{% for zone in range(launch_route[tour][launch]|length) %}
 							<tr>
@@ -31,6 +32,7 @@
 								<td>{{timetable[tour].iloc[launch,zone][0]}}</td>
 								<td>{{timetable[tour].iloc[launch,zone][1]}}</td>
 								<td>{{timetable[tour].iloc[launch,zone][2]}}</td>
+								<td>{{timetable[tour].iloc[launch,zone][3]}}</td>
 							</tr>
 						{% endfor %}
 						</table>

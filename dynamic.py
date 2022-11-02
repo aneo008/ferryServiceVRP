@@ -1,6 +1,5 @@
 from ast import literal_eval
 from utils import Locations
-from schedule import schedule
 
 import time as timer
 import os
@@ -20,7 +19,7 @@ def inputs():
     return file, fleet
 
 # Reads outputs
-def reader(file,fleetsize):
+def reader(file):
     # Obtain orders, can replace later, no need to save to csav
     dirName = os.path.dirname(os.path.abspath(__file__))
     if file == 'mainQ':
@@ -43,7 +42,7 @@ def reader(file,fleetsize):
             timetable[tour] = pd.read_csv(
                 os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', on_bad_lines='warn')
         except:
-            break
+            continue
 
     return mainQ, timetable
 
@@ -56,8 +55,8 @@ def estCor(time_now,launch_etd,tour,i,etd,timetable,cur):
     return est_coor
 
 # Converts string '[list]' to [list]
-def convert_to_list(timetable, num_of_tours, fleetsize):
-    for tour in range (num_of_tours):
+def convert_to_list(timetable, fleetsize):
+    for tour in timetable:
         for i in range (fleetsize):
             try:
                 for j in range(len(timetable[tour].iloc[0])):
@@ -76,19 +75,18 @@ def convert_to_list(timetable, num_of_tours, fleetsize):
 # Code for dynamic element
 def dynamic(file, fleetsize, time_now):
     # Run optimiser
-    mainQ,timetable = reader(file,fleetsize)
+    mainQ,timetable = reader(file)
     
     # To change when implement server to detect for change rather than looping
     launch_route = {}
     launch_location = {}
     launch_etd = {}
-    num_of_tours = len(timetable)
 
     # Convert list entries in pandas from string to list
-    timetable = convert_to_list(timetable, num_of_tours, fleetsize)
+    timetable = convert_to_list(timetable, fleetsize)
     
     # Running through all the tours 
-    for tour in range(num_of_tours):
+    for tour in timetable:
         launch_route[tour]={}
         launch_etd[tour] = {}
         launch_location[tour] = {}
@@ -157,7 +155,7 @@ def dynamic(file, fleetsize, time_now):
         #print('\nMainQ is: ', mainQ)
 
     # Convert min in timetable to hr
-    for tour in range (num_of_tours):
+    for tour in timetable:
         for i in range(fleetsize):
             for j in range(len(timetable[tour].iloc[i])):
                 try:    

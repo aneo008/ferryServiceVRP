@@ -211,29 +211,21 @@ def schedule(file,fleet,tour_ip):
     objFn = {}
     for i in range(len(df_tours)):
         if tour_ip != None:
+            for j in range(len(df_tours)):
+                if df_tours[j][0][0] == 540 + 150*tour_ip:
+                    i=j
+        df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
+        
+        if tour_ip != None:
             i = tour_ip
+
         print('Tour {}'.format(i+1))
         fig, ax = plt.subplots()
         ax.imshow(img)
 
-        # Pre-optimisation step. If df is empty, delete raw_Timetable
-        try:
-            df_MSP, fleetsize_MSP, df_West, fleetsize_West = separateTasks(df_tours[i], fleet)
-        except:
-            rawtt_path = os.path.join(os.path.join(dirName,'outputs/logs/raw_Timetable_{}.csv'.format(i)))
-            if os.path.exists(rawtt_path):
-                os.remove(rawtt_path)
-            anchorage_map = os.path.join(
-                dirName, "Port_Of_Singapore_Anchorages_Chartlet.png")
-            map_path = os.path.join(
-                dirName, 'static/img', 'order_Tour{}'.format(i+1) + '_schedule.png')
-            shutil.copy(anchorage_map, map_path)
-            break
-        
-
         # Perform LP
-        route1, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, None, False) 
-        route2, solutionSet_MSP, _, cost2, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, None, False)     
+        _, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, None, False) 
+        _, solutionSet_MSP, _, cost2, _, _, _, _= calculateRoute(len(df_MSP)-1, fleetsize_MSP, df_MSP, None, False)     
 
         # Draw and visualise solutions
         drawSolution(solutionSet_West, df_West, ax)

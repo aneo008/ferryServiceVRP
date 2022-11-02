@@ -43,12 +43,15 @@ def delete_Q():
     logs_path = os.path.join(dirName, 'outputs/logs')
     mainQ_path = os.path.join(logs_path, 'mainQ.csv')
     ogQ_path = os.path.join(dirName, 'datasets/ogQ.csv')
+    ogQ2_path = os.path.join(dirName, 'datasets/ogQ2.csv')
     img_path = os.path.join(dirName, 'static/img')
 
     if os.path.exists(mainQ_path):
         os.remove(mainQ_path)
     if os.path.exists(ogQ_path):
         os.remove(ogQ_path)
+    if os.path.exists(ogQ2_path):
+        os.remove(ogQ2_path)
 
     for i in range(4):
         # Remove raw_Timetable file if no more orders in that tour
@@ -76,7 +79,7 @@ def delete_Q():
 
 def deleteBooking(id,t_now,cur_tour):
     # Define variables
-    mainQ, _ = reader('mainQ', fleetsize)
+    mainQ, _ = reader('mainQ')
     _, launch_location, launch_etd, launch_route = dynamic(
         'mainQ', fleetsize, t_now)
     b_id = mainQ.iloc[id, 0]
@@ -85,7 +88,7 @@ def deleteBooking(id,t_now,cur_tour):
     tour, launch = find_tour_launch(zone, launch_route, tw)
 
     raw_Timetable = convert_to_list(pd.read_csv(os.path.join(
-        dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1'), 1, fleetsize)
+        dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1'), fleetsize)
 
     # Remove booking from ogQ - tracks all bookings served and to be served
     if os.path.exists(os.path.join(dirName, 'datasets/ogQ.csv')):
@@ -106,7 +109,18 @@ def deleteBooking(id,t_now,cur_tour):
 
     # If deleted request is from upcoming tour
     if tour > cur_tour:
-        schedule('ogQ', fleetsize, tour)
+        # Pre-optimisation step. If there is only 1 booking, that is the one to be deleted, delete raw_Timetable
+        tour_in_og = ogQ[ogQ.Start_TW >= 540 + 150*tour]
+        if len(tour_in_og) == 0:
+            rawtt_path = os.path.join(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)))
+            os.remove(rawtt_path)
+            anchorage_map = os.path.join(
+                dirName, "Port_Of_Singapore_Anchorages_Chartlet.png")
+            map_path = os.path.join(
+                dirName, 'static/img', 'order_Tour{}'.format(tour+1) + '_schedule.png')
+            shutil.copy(anchorage_map, map_path)
+        else:
+            schedule('ogQ', fleetsize, tour)
 
     # If launch has not left
     elif (launch_location[tour][launch][1] == Locations["Port West"]) or (launch_location[tour][launch][1] == Locations["Port MSP"]):
@@ -186,7 +200,7 @@ def deleteBooking(id,t_now,cur_tour):
 
 def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
     # Define variables
-    mainQ, _ = reader('mainQ', fleetsize)
+    mainQ, _ = reader('mainQ')
     _, launch_location, launch_etd, launch_route = dynamic(
         'mainQ', fleetsize, t_now)
     
@@ -212,10 +226,11 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
     if timewindow > cur_tour:
         try:
             schedule('ogQ2', fleetsize, timewindow)
+        
         except:
             # if no results
             return False
-
+        
     # 2. Else try current tour but launch that have not left, add to mainQ for tour and reoptimise. Calculate total objective value and increase (ie cost)
     else:
         # Get route for launches that have not left
@@ -339,7 +354,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
 
         # Replace timetable for routes that have not left
         raw_Timetable = convert_to_list(pd.read_csv(os.path.join(
-            dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1'), 1, fleetsize)
+            dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1'), fleetsize)
         # Create new column
         while len(raw_Timetable.iloc[0]) < len(r2t[0]):
             raw_Timetable['{}'.format(len(raw_Timetable.iloc[0]))] = ''
@@ -373,7 +388,7 @@ def drawLaunch(launch_location, tour):
     if not os.path.exists(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour))):
         return
 
-    raw_Timetable = convert_to_list(pd.read_csv(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1'), 1, fleetsize)
+    raw_Timetable = convert_to_list(pd.read_csv(os.path.join(dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1'), fleetsize)
 
     fig, ax = drawSolution2(raw_Timetable, tour, False)
     for i in range(fleetsize):
@@ -382,3 +397,44 @@ def drawLaunch(launch_location, tour):
     # Save visualisations in a png file
     fig.savefig(outputPlot)
     plt.close('all')
+
+def capacity(timetable,launch_route):
+    ogQ_path = os.path.join(dirName, 'datasets/ogQ.csv')
+    ogQ2_path = os.path.join(dirName, 'datasets/ogQ2.csv')
+    order_path = os.path.join(dirName, 'datasets/order.csv')
+    if os.path.exists(ogQ2_path):
+        ogQ2 = pd.read_csv(ogQ2_path, encoding='utf-8', on_bad_lines='warn')
+    elif os.path.exists(ogQ_path):
+        ogQ2 = pd.read_csv(ogQ_path, encoding='utf-8', on_bad_lines='warn')
+    else:
+        ogQ2 = pd.read_csv(order_path, encoding='utf-8', on_bad_lines='warn')
+    
+    for tour in launch_route:
+        for launch in launch_route[tour]:
+            cap = 14 # Max capacity is 14
+            linehaul = 0
+            count = 0
+            for zone in launch_route[tour][launch]:
+                if zone != "Port West" and zone != "Port MSP":
+                    # Find demand and request type at zone
+                    b = ogQ2[(ogQ2.Zone == zone) & (ogQ2.Start_TW >= 540+150*tour) & (ogQ2.End_TW <= 540+150*(tour+1))]
+                    if len(b) > 1:
+                        b = b.iloc[:1]
+                        b_in = ogQ2[ogQ2.Order_ID == b.iloc[0,0]].index
+                        ogQ2 = ogQ2.drop(b_in)
+                    request_type = b.iloc[0,1]
+                    demand = b.iloc[0,3]
+
+                    # Find capacity demand from ogQ2 ie queue that includes new bookings
+                    if request_type == 1:
+                        cap += demand
+                        linehaul += demand
+                    else:
+                        cap -= demand
+                timetable[tour].iloc[launch,count].append(cap)
+                count += 1
+
+            # Adjust for linehaul
+            for zone in range(len(launch_route[tour][launch])):
+                timetable[tour].iloc[launch,zone][3] -= linehaul
+    return timetable
