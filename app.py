@@ -11,7 +11,7 @@ global time_start_epoch
 time_start_epoch = int(time.time())
 
 # Run Scheduler
-#schedule(file, fleetsize, None)
+schedule(file, fleetsize, None)
 
 app = Flask(__name__)
 
