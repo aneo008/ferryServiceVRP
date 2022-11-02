@@ -21,15 +21,15 @@ def drawSolution2(raw_Timetable, tour, draw):
     
     fig, ax = plt.subplots()
     ax.imshow(img)
-    for i in range(len(raw_Timetable)):
-        for j in range(len(raw_Timetable.loc[i])-1):
+
+    for i in range(len(raw_Timetable[0])):
+        for j in range(len(raw_Timetable[0].loc[i])-1):
             try:
-                zone_s = raw_Timetable.iloc[i,j][0]
-                zone_e = raw_Timetable.iloc[i,j+1][0]
+                zone_s = raw_Timetable[0].iloc[i,j][0]
+                zone_e = raw_Timetable[0].iloc[i, j+1][0]
                 launch_id = str(i+1)
 
-                ax.scatter(Locations[zone_s][0],
-                        Locations[zone_s][1], marker='o')
+                ax.scatter(Locations[zone_s][0],Locations[zone_s][1], marker='o')
                 ax.arrow(Locations[zone_s][0], Locations[zone_s][1],
                         Locations[zone_e][0] - Locations[zone_s][0], 
                         Locations[zone_e][1] - Locations[zone_s][1],

@@ -56,6 +56,8 @@ def estCor(time_now,launch_etd,tour,i,etd,timetable,cur):
 
 # Converts string '[list]' to [list]
 def convert_to_list(timetable, fleetsize):
+    if type(timetable) != dict:
+        timetable = {0:timetable}
     for tour in timetable:
         for i in range (fleetsize):
             try:
@@ -144,8 +146,9 @@ def dynamic(file, fleetsize, time_now):
                     # Visualise which booking is deleted, debugging purposes
                     #if not mainQ[(mainQ.Zone == launch_route[tour][i][v]) & (mainQ.End_TW < time_now) & (launch_etd[tour][i][v] <= time_now)].empty:
                         #print(mainQ[(mainQ.Zone == launch_route[tour][i][v]) & (mainQ.End_TW < time_now) & (launch_etd[tour][i][v] <= time_now)])
-                    b_in = mainQ[(mainQ.Zone == launch_route[tour][i][v])&(mainQ.End_TW < time_now)&(launch_etd[tour][i][v]<=time_now)].index
-                    mainQ = mainQ.drop(b_in)
+                    b_in = mainQ[(mainQ.Zone == launch_route[tour][i][v])].index # &(mainQ.End_TW < time_now) to include condition for end tw
+                    if (launch_etd[tour][i][v] <= time_now):
+                        mainQ = mainQ.drop(b_in)
                     mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='latin1', index=False)
 
             #print(timetable[tour])  

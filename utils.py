@@ -78,17 +78,19 @@ def computeDistMatrix(df, map):
 def computeDistMatrix2(df, launchlocation):
     global Locations, Edges
     
-    if "launchlocation" in Locations:
+    if "launchlocation{}".format(launchlocation[3]) in Locations:
         Edges = reset_edges()
     numOfCustomers = df.shape[0]
     distMatrix = np.zeros((numOfCustomers+2, numOfCustomers+2))
-    Locations["launchlocation"] = launchlocation[0][1]
+    Locations["launchlocation{}".format(launchlocation[3])]=launchlocation[0][1]
 
     # Calculate and create edges between launch Locations and various zones
     for edge in launchlocation[1]:
-        # Divided by 30 to estimate edge length in Edges. Obtained from averaging dist and edge_tuple distances
-        dist = np.sqrt(np.square(Locations["launchlocation"][0]-Locations[edge][0])+np.square(Locations["launchlocation"][1]-Locations[edge][1]))/30
-        Edges.append(('launchlocation',edge,dist))
+        # Divided by 30 (arbitary number obtained by finding the average scale from map to what the previous writer used) to estimate edge length in Edges. Obtained from averaging dist and edge_tuple distances
+        dist = np.sqrt(np.square(Locations["launchlocation{}".format(
+            launchlocation[3])][0]-Locations[edge][0])+np.square(Locations["launchlocation{}".format(launchlocation[3])][1]-Locations[edge][1]))/30
+        Edges.append(('launchlocation{}'.format(
+            launchlocation[3]), edge, dist))
 
     # Recreate graph
     MapGraph = nx.Graph()

@@ -83,6 +83,7 @@ def deleteBooking(id,t_now,cur_tour):
     _, launch_location, launch_etd, launch_route = dynamic(
         'mainQ', fleetsize, t_now)
     b_id = mainQ.iloc[id, 0]
+    req_type = mainQ.iloc[id, 1]
     zone = mainQ.iloc[id, 2]
     tw = mainQ.iloc[id, 5]
     tour, launch = find_tour_launch(zone, launch_route, tw)
@@ -106,6 +107,7 @@ def deleteBooking(id,t_now,cur_tour):
 
     # Remove booking from route
     launch_route[tour][launch].remove(zone)
+    print ("Removed", zone)
 
     # If deleted request is from upcoming tour
     if tour > cur_tour:
@@ -153,17 +155,24 @@ def deleteBooking(id,t_now,cur_tour):
 
     # If launch has left
     else:
+        # Ignore linehaul request cancellations
+        if req_type == 1:
+            return 500
+        
         # Departure Point launch location
         df = pd.DataFrame(
-            [[0, 0, 'launchlocation', 0, t_now, t_now+150]], columns=mainQ.columns)
+            [[0, 0, 'launchlocation{}'.format(launch), 0, t_now, t_now+150]], columns=mainQ.columns)
         edge = []
+        count = 0
         for r in launch_route[tour][launch]:
             if (r == 'Port West') or (r == 'Port MSP'):
                 r_port = r
             else:
-                df = pd.concat([df, ogQ[(ogQ.Zone == r) & (
-                    ogQ.Start_TW >= 540+150*(tour)) & (ogQ.End_TW <= 540+150*(tour+1))]])
-                edge.append(r)
+                if launch_etd[tour][launch][count] > t_now:
+                    df = pd.concat([df, ogQ[(ogQ.Zone == r) & (ogQ.Start_TW >= 540+150*(tour)) & (ogQ.End_TW <= 540+150*(tour+1))]])
+                    edge.append(r)
+            count+=1
+
         edge.append(r_port)
         r_port_df = pd.DataFrame(
             [['return', 0, r_port, 0, t_now, t_now+150]], columns=mainQ.columns)
@@ -173,23 +182,24 @@ def deleteBooking(id,t_now,cur_tour):
         launchlocation = {}
         launchlocation[0] = launch_location[tour][launch]
         launchlocation[1] = edge
-        # Original departure time
-        launchlocation[2] = launch_etd[tour][launch][0]
-        _, solutionSet, _, _, _, _, _, _ = calculateRoute(
-            len(df)-1, 1, df, launchlocation, False)
+        # Original departure time is launch_etd[tour][launch][0] // implement only if want the timetable to show port instead of launch location
+        launchlocation[2] = t_now
+        launchlocation[3] = launch
+
+        _, solutionSet, _, _, _, _, _, _ = calculateRoute(len(df)-1, 1, df, launchlocation, False)
         if solutionSet == None:
             return 500
         else:
             r2t = route2Timetable(df, 1, solutionSet, launchlocation)
 
         # Replace with new timetable
-        for j in range(len(raw_Timetable.iloc[0])):
+        for j in range(len(raw_Timetable[0].iloc[0])):
             if j < len(r2t[0]):
-                raw_Timetable.iloc[launch, j] = r2t[0][j]
+                raw_Timetable[0].iloc[launch, j] = r2t[0][j]
             else:
-                raw_Timetable.iloc[launch, j] = ''
+                raw_Timetable[0].iloc[launch, j] = ''
 
-        raw_Timetable.to_csv(os.path.join(
+        raw_Timetable[0].to_csv(os.path.join(
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(tour)), encoding='latin1', index=False)
 
         # Replace map for routes that left
@@ -292,7 +302,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 print("Launch", launch)
                 options[case] = []
                 df = pd.DataFrame(
-                    [[0, 0, 'launchlocation', 0, t_now, t_now+150]], columns=mainQ.columns)
+                    [[0, 0, 'launchlocation{}'.format(launch), 0, t_now, t_now+150]], columns=mainQ.columns)
                 edge = []
                 for r in launch_route[timewindow][launch]:
                     if (r == 'Port West') or (r == 'Port MSP'):
@@ -313,8 +323,10 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 launchlocation = {}
                 launchlocation[0] = launch_location[timewindow][launch]
                 launchlocation[1] = edge
-                # Original departure time
-                launchlocation[2] = launch_etd[timewindow][launch][0]
+                # Original departure time // launch_etd[timewindow][launch][0]
+                launchlocation[2] = t_now
+                launchlocation[3] = launch
+
                 _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(
                     len(df2)-1, 1, df2, launchlocation, False)
 
@@ -415,13 +427,14 @@ def capacity(timetable,launch_route):
             linehaul = 0
             count = 0
             for zone in launch_route[tour][launch]:
-                if zone != "Port West" and zone != "Port MSP":
+                if zone != "Port West" and zone != "Port MSP" and zone != "launchlocation{}".format(launch):
                     # Find demand and request type at zone
                     b = ogQ2[(ogQ2.Zone == zone) & (ogQ2.Start_TW >= 540+150*tour) & (ogQ2.End_TW <= 540+150*(tour+1))]
                     if len(b) > 1:
                         b = b.iloc[:1]
                         b_in = ogQ2[ogQ2.Order_ID == b.iloc[0,0]].index
                         ogQ2 = ogQ2.drop(b_in)
+                    
                     request_type = b.iloc[0,1]
                     demand = b.iloc[0,3]
 

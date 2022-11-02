@@ -89,17 +89,19 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         temp_arrival = []
         temp_departure = []
 
-        try: #if launchlocation == None:
+        if launchlocation == None:
             if df['Port'][0]=='West':
                 temp_location.append('Port West')
             else:
                 temp_location.append('Port MSP')
-        except:
+        else:
+            temp_location.append('launchlocation{}'.format(launchlocation[3]))
+            '''
             if df['Zone'][len(links[i])]=='Port West':
                 temp_location.append('Port West')
             else:
                 temp_location.append('Port MSP')
-
+            '''
         temp_arrival.append('NA') # Departure only (First Node)
         temp_departure.append(start_time)
         last_time = int(start_time)
@@ -210,6 +212,9 @@ def schedule(file,fleet,tour_ip):
     print('Beginning optimisation...\n')
     objFn = {}
     for i in range(len(df_tours)):
+        fig, ax = plt.subplots()
+        ax.imshow(img)
+        
         if tour_ip != None:
             for j in range(len(df_tours)):
                 if df_tours[j][0][0] == 540 + 150*tour_ip:
@@ -220,8 +225,6 @@ def schedule(file,fleet,tour_ip):
             i = tour_ip
 
         print('Tour {}'.format(i+1))
-        fig, ax = plt.subplots()
-        ax.imshow(img)
 
         # Perform LP
         _, solutionSet_West, _, cost1, _, _, _,_ = calculateRoute(len(df_West)-1, fleetsize_West, df_West, None, False) 

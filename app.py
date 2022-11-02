@@ -16,8 +16,9 @@ schedule(file, fleetsize, None)
 app = Flask(__name__)
 
 # Note this does not account for after 2359hr
+# Divide by 4 so 1 min in timer = 4s irl
 def t_now():
-    return 540 + int(time.time()) - time_start_epoch
+    return 540 + (int(time.time()) - time_start_epoch)/4
     
 def cur_tour():
     for i in range(4):
@@ -72,7 +73,7 @@ def delete():
 @app.route("/add_ten",methods=['POST'])
 def add_ten():
     global time_start_epoch
-    time_start_epoch -= 5
+    time_start_epoch -= 5*4 # same as t_now factor
     return redirect ('/booking')
 
 @app.route('/newbooking')
