@@ -2,6 +2,7 @@ import os
 import shutil
 import matplotlib.pyplot as plt
 import pandas as pd
+import time
 from datetime import datetime
 
 from schedule import schedule, route2Timetable
@@ -79,6 +80,7 @@ def delete_Q():
 
 def deleteBooking(id,t_now,cur_tour):
     # Define variables
+    t_start = time.time()
     mainQ, _ = reader('mainQ')
     _, launch_location, launch_etd, launch_route = dynamic(
         'mainQ', fleetsize, t_now)
@@ -207,9 +209,12 @@ def deleteBooking(id,t_now,cur_tour):
 
     mainQ.to_csv(os.path.join(dirName, 'outputs/logs/mainQ.csv'),
                  encoding='latin1', index=False)
+    time_taken = time.time() - t_start
+    print("Time take: ",time_taken)
 
 def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
     # Define variables
+    t_start = time.time()
     mainQ, _ = reader('mainQ')
     _, launch_location, launch_etd, launch_route = dynamic(
         'mainQ', fleetsize, t_now)
@@ -368,19 +373,19 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
         raw_Timetable = convert_to_list(pd.read_csv(os.path.join(
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1'), fleetsize)
         # Create new column
-        while len(raw_Timetable.iloc[0]) < len(r2t[0]):
-            raw_Timetable['{}'.format(len(raw_Timetable.iloc[0]))] = ''
+        while len(raw_Timetable[0].iloc[0]) < len(r2t[0]):
+            raw_Timetable[0]['{}'.format(len(raw_Timetable[0].iloc[0]))] = ''
 
         # Original route length + 1 (incorporate new booking) - length of new route; to take into account zones that have been served
         served = len(launch_route[timewindow]
                      [options[case_no][2]]) + 1 - len(r2t[0])
-        for j in range(served, len(raw_Timetable.loc[0])):
+        for j in range(served, len(raw_Timetable[0].loc[0])):
             if j < len(r2t[0]):
-                raw_Timetable.iloc[options[case_no][2], j] = r2t[0][j]
+                raw_Timetable[0].iloc[options[case_no][2], j] = r2t[0][j]
             else:
-                raw_Timetable.iloc[options[case_no][2], j] = ''
+                raw_Timetable[0].iloc[options[case_no][2], j] = ''
 
-        raw_Timetable.to_csv(os.path.join(
+        raw_Timetable[0].to_csv(os.path.join(
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1', index=False)
 
         # Replace map
@@ -391,7 +396,8 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 encoding='latin1', index=False)
     ogQ2.to_csv(os.path.join(dirName, 'datasets/ogQ.csv'),
                 encoding='utf-8', index=False)
-
+    time_taken = time.time() - t_start
+    print("Time take: ", time_taken)
     return True
 
 def drawLaunch(launch_location, tour):
