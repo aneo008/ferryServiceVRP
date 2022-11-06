@@ -161,8 +161,9 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         timetable.append(temp_table)
     
     # For case where timetable only has launch location and port, 2nd entry would have same arrival and departure
-    if timetable[0][1][1] == timetable[0][1][2]:
-        del timetable[0][1]
+    if (launchlocation != None):
+        if (timetable[0][1][1] == timetable[0][1][2]):
+            del timetable[0][1]
 
     return timetable
 
