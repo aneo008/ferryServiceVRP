@@ -51,6 +51,9 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
     if launchlocation == None:
         distMatrix = computeDistMatrix(df, MapGraph)
         start_time = df.iloc[0,4] # Start Time
+    elif launchlocation[1] == None:
+        distMatrix = computeDistMatrix(df, MapGraph)
+        start_time = launchlocation[2]  # Start Time
     else:
         distMatrix = computeDistMatrix2(df, launchlocation)
         start_time = launchlocation[2] # Start Time
@@ -82,7 +85,7 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
                     start = end
                     break
         links.append(temp_link)
-
+    
     # Populate Location, Arrival and Departure columns
     for i in range(len(links)):
         temp_location = []
@@ -94,6 +97,8 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
                 temp_location.append('Port West')
             else:
                 temp_location.append('Port MSP')
+        elif launchlocation[1] == None:
+            temp_location.append(launchlocation["Port"])
         else:
             temp_location.append('launchlocation{}'.format(launchlocation[3]))
             '''
@@ -114,12 +119,22 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
                 temp_arrival.append(travel_time+last_time)
                 temp_departure.append(travel_time+df['Demand'][links[i][j]]+last_time)
                 last_time += travel_time+df['Demand'][links[i][j]]
+            # For case where timetable only has launch location and port, there would only be one link ie launch-port
+            if (len(links[i]) == 1) & (links[i][j] != 0):
+                temp_location.append(df['Zone'][links[i][j]])
+                travel_time = round(distMatrix[links[i][j]][2]/0.463)
+                temp_arrival.append(travel_time+last_time)
+                temp_departure.append(
+                    travel_time+df['Demand'][links[i][j]]+last_time)
+                last_time += travel_time+df['Demand'][links[i][j]]
 
         if launchlocation == None:
             if df['Port'][0]=='West':
                 temp_location.append('Port West')
             else:
                 temp_location.append('Port MSP')
+        elif launchlocation[1] == None:
+            temp_departure = launchlocation["Port"]
         else:
             temp_departure = temp_departure[:-1]
                 
@@ -131,14 +146,24 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         locations.append(temp_location)
         arrival_time.append(temp_arrival)
         departure_time.append(temp_departure)
-
+    
     # Populate timetable
     for i in range(len(locations)):
+        # Check if arrival time back at port is passed time window
+        if launchlocation != None:
+            if arrival_time[i][-2] > 540 + 150*(launchlocation[3]+1):
+                print("Arrival for launch",i, "is ", arrival_time[i][-1], ", which is passed time window")
+                return False
+        
         temp_table = []
         for j in range(len(locations[i])):
             temp_table.append([locations[i][j], arrival_time[i][j], departure_time[i][j]])
         timetable.append(temp_table)
-        
+    
+    # For case where timetable only has launch location and port, 2nd entry would have same arrival and departure
+    if timetable[0][1][1] == timetable[0][1][2]:
+        del timetable[0][1]
+
     return timetable
 
 def schedule(file,fleet,tour_ip):

@@ -11,7 +11,7 @@ global time_start_epoch
 time_start_epoch = int(time.time())
 
 # Run Scheduler
-schedule(file, fleetsize, None)
+#schedule(file, fleetsize, None)
 
 app = Flask(__name__)
 
@@ -83,7 +83,7 @@ def newbooking():
 @app.route('/addbooking', methods=['POST'])
 def addbooking():
     request_type = int(request.form.get("request"))
-    if request_type == 1:
+    if request_type == 2:
         request_type2 = 'Linehaul'
     else:
         request_type2 = 'Backhaul'

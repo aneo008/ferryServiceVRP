@@ -25,7 +25,7 @@
                 <tr>
                     {% for j in range(mainQ.columns|length) %}
                         {% if j==1 %}
-                            {% if mainQ.iloc[i,j]==1 %}
+                            {% if mainQ.iloc[i,j]==2 %}
                                 <td>Linehaul</td>
                             {% else %}
                                 <td>Backhaul</td>
@@ -37,7 +37,7 @@
                     <td>
                         <form action="{{ url_for('delete') }}" method="POST" onsubmit="return confirm('Do you really want delete this booking?');">
                             <input type="hidden" name="bookingid" value={{i}}>
-                            {% if (mainQ2[i] < 540+(tour+1)*150) and (mainQ.iloc[i,1]==1) %}
+                            {% if (mainQ2[i] < 540+(tour+1)*150) and (mainQ.iloc[i,1]==2) %}
                                 <button class="btn btn-secondary" disabled>Delete</button>
                             {% else %}
                                 <button id="delete" type="submit" class="btn btn-danger" name="delete" onclick="$('#cover-spin').show(0)">Delete</button>

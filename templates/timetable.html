@@ -13,7 +13,7 @@
 			<div class="col">
 				<h2 style="text-align: center">Tour {{tour+1}}</h2>
 				{% for launch in launch_route[tour] %}
-					{% if launch_route[tour][launch]|length == 2 %}
+					{% if (launch_route[tour][launch]|length == 2) and (timetable[tour].iloc[launch,0][0]!="Launch") %}
 						<h3> Launch {{launch+1}} </h3> <br>
 						Not deployed <br><br>
 					{% else %}

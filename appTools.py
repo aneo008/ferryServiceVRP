@@ -40,6 +40,8 @@ def find_tour_launch(zone, launch_route, tw):
         return tour, None
     return None, None
 
+def check_time():
+    return
 def delete_Q():
     logs_path = os.path.join(dirName, 'outputs/logs')
     mainQ_path = os.path.join(logs_path, 'mainQ.csv')
@@ -158,7 +160,7 @@ def deleteBooking(id,t_now,cur_tour):
     # If launch has left
     else:
         # Ignore linehaul request cancellations
-        if req_type == 1:
+        if req_type == 2:
             return 500
         
         # Departure Point launch location
@@ -281,9 +283,20 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
             # Solve for launches that have not left in current tour
                 _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(
                     len(ogQ2_tour)-1, len(not_left), ogQ2_tour, None, False)
+                
+                launchlocation = {}
+                launchlocation["Port"] = ogQ_tour.iloc[0,2]
+                launchlocation[1] = None
+                launchlocation[2] = t_now
+                launchlocation[3] = cur_tour
+                
                 if objFn2 != None:
-                    r2t = route2Timetable(ogQ2_tour, len(
-                        not_left), solutionSet, None)
+                    r2t = route2Timetable(ogQ2_tour, len(not_left), solutionSet, launchlocation)
+                    
+                    # Test if time has been exceeded eg book 1 min before time window ends
+                    if r2t == False:
+                        return False
+
                     options[case].append(r2t)
 
                     # Calculate change in objFn by calculating objFn of original without new booking
@@ -299,7 +312,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
 
     # 3. Then try current tour but launches that left, reoptimise route. Calculate total objective value and increase (ie cost)
         # Only for backhaul requests
-        if (len(not_left) != fleetsize) & (request_type == 2):
+        if (len(not_left) != fleetsize) & (request_type == 1):
             case = 2
 
             # Departure Point launch location
@@ -445,7 +458,7 @@ def capacity(timetable,launch_route):
                     demand = b.iloc[0,3]
 
                     # Find capacity demand from ogQ2 ie queue that includes new bookings
-                    if request_type == 1:
+                    if request_type == 2: #linehaul
                         cap += demand
                         linehaul += demand
                     else:
@@ -456,4 +469,10 @@ def capacity(timetable,launch_route):
             # Adjust for linehaul
             for zone in range(len(launch_route[tour][launch])):
                 timetable[tour].iloc[launch,zone][3] -= linehaul
+            
+            # Change for display in Timetable tab
+            for x in range(fleetsize):
+                if timetable[tour].iloc[launch,0][0] == "launchlocation{}".format(x):
+                    timetable[tour].iloc[launch, 0][0] = "Launch"
+
     return timetable
