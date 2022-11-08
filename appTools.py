@@ -376,19 +376,23 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
         min_objFn = float('inf')  # large number
         no_soln = True
         for i in options:
+            timetable = options[i][0]
             change = options[i][1]
             if change == None:
                 print('Case:', i, ', No feasible solution')
+            elif timetable[0][-1][1] > 540 + (cur_tour +1) * 150:
+                print('Case:', i, ', No feasible solution')
             else:
                 print('Case:', i, ', Change:', change, ', Launch', options[i][2]+1)
-            if change != None:
                 no_soln = False
                 if change < min_objFn:
                     min_objFn = change
-                    r2t = options[i][0]
+                    r2t = timetable
                     case_no = i
 
         if no_soln:
+            time_taken = time.time() - t_start
+            print("Time take: ", time_taken)
             return False
 
         # Replace timetable for routes that have not left
