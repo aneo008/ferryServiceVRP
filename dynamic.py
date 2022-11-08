@@ -26,7 +26,7 @@ def reader(file):
         mainQ_path = os.path.join(dirName, 'outputs/logs/mainQ.csv')
         if os.path.exists(mainQ_path):
             try:
-                mainQ = pd.read_csv(mainQ_path, encoding='latin1', on_bad_lines='warn')
+                mainQ = pd.read_csv(mainQ_path, encoding='utf-8', on_bad_lines='warn')
             except:
                 mainQ = None
         else:
@@ -149,7 +149,7 @@ def dynamic(file, fleetsize, time_now):
                     b_in = mainQ[(mainQ.Zone == launch_route[tour][i][v])].index # &(mainQ.End_TW < time_now) to include condition for end tw
                     if (launch_etd[tour][i][v] <= time_now):
                         mainQ = mainQ.drop(b_in)
-                    mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='latin1', index=False)
+                    mainQ.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'outputs/logs/mainQ.csv'), encoding='utf-8', index=False)
 
             #print(timetable[tour])  
         #print('\nLaunch location for tour {} is: '.format(tour), launch_location) 

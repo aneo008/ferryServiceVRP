@@ -134,10 +134,9 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
             else:
                 temp_location.append('Port MSP')
         elif launchlocation[1] == None:
-            temp_departure = launchlocation["Port"]
+            temp_location.append(launchlocation["Port"])
         else:
             temp_departure = temp_departure[:-1]
-                
         travel_time = round(distMatrix[links[i][j]][links[i][j-1]]/0.463)
         temp_arrival.append(travel_time+last_time)
         last_time += travel_time+df['Demand'][links[i][j]]

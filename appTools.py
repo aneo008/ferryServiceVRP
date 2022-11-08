@@ -326,12 +326,18 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                     if (r == 'Port West') or (r == 'Port MSP'):
                         r_port = r
                     else:
-                        df = pd.concat([df, ogQ[(ogQ.Zone == r) & (
-                            ogQ.Start_TW >= 540+150*(timewindow)) & (ogQ.End_TW <= 540+150*(timewindow+1))]])
-                        edge.append(r)
+                        # Removed bookings served
+                        if mainQ[mainQ.End_TW <= 540 + (cur_tour+1) * 150].isin([r]).any().any():
+                            df = pd.concat([df, ogQ[(ogQ.Zone == r) & (
+                                ogQ.Start_TW >= 540+150*(timewindow)) & (ogQ.End_TW <= 540+150*(timewindow+1))]])
+                            edge.append(r)
+                        else:
+                            print(r, "is served")
+                            pass
+                        
+                    
                 edge.append(r_port)
-                r_port_df = pd.DataFrame(
-                    [['Returned', 0, r_port, 0, t_now, t_now+150]], columns=mainQ.columns)
+                r_port_df = pd.DataFrame([['Returned', 0, r_port, 0, t_now, t_now+150]], columns=mainQ.columns)
                 temp_df = df
                 df = pd.concat([df, r_port_df])
                 df = df.reset_index(drop=True)
@@ -344,13 +350,13 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 # Original departure time // launch_etd[timewindow][launch][0]
                 launchlocation[2] = t_now
                 launchlocation[3] = launch
-
-                _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(
-                    len(df2)-1, 1, df2, launchlocation, False)
+                
+                _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(len(df2)-1, 1, df2, launchlocation, False)
 
                 if objFn2 != None:
                     # Have to consider what happens if some zones have already been served
                     r2t = route2Timetable(df2, 1, solutionSet, launchlocation)
+                    print(solutionSet,r2t)
                     options[case].append(r2t)
 
                     # Calculate change in objFn by calculating objFn of original without new booking
@@ -371,7 +377,10 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
         no_soln = True
         for i in options:
             change = options[i][1]
-            print('Case:', i, ', Change:', change, ', Launch', options[i][2])
+            if change == None:
+                print('Case:', i, ', No feasible solution')
+            else:
+                print('Case:', i, ', Change:', change, ', Launch', options[i][2]+1)
             if change != None:
                 no_soln = False
                 if change < min_objFn:
@@ -388,7 +397,15 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
         # Create new column
         while len(raw_Timetable[0].iloc[0]) < len(r2t[0]):
             raw_Timetable[0]['{}'.format(len(raw_Timetable[0].iloc[0]))] = ''
+        
+        for j in range(len(raw_Timetable[0].loc[0])):
+            if j<len(r2t[0]):
+                raw_Timetable[0].iloc[options[case_no][2], j] = r2t[0][j]
+            else:
+                raw_Timetable[0].iloc[options[case_no][2], j] = ''
 
+        '''
+        # If it did not start from launchlocation
         # Original route length + 1 (incorporate new booking) - length of new route; to take into account zones that have been served
         served = len(launch_route[timewindow]
                      [options[case_no][2]]) + 1 - len(r2t[0])
@@ -397,6 +414,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 raw_Timetable[0].iloc[options[case_no][2], j] = r2t[0][j]
             else:
                 raw_Timetable[0].iloc[options[case_no][2], j] = ''
+        '''
 
         raw_Timetable[0].to_csv(os.path.join(
             dirName, 'outputs/logs/raw_Timetable_{}.csv'.format(timewindow)), encoding='latin1', index=False)

@@ -11,8 +11,8 @@
         <label for="validationCustom01" class="form-label">Select Request Type</label>
         <select name="request" id="validationCustom01" class="form-select form-select-sm" required>
             <option selected disabled value="">Request Type</option>
-            <option value="1">Linehaul</option>
-            <option value="2">Backhaul</option>
+            <option value="1">Backhaul</option>
+            <option value="2">Linehaul</option>
         </select>
         <div class="invalid-feedback">
             Please select a request type.
@@ -23,7 +23,7 @@
         <select name="zone" id="validationCustom02" class="form-select form-select-sm" required>
             <option selected disabled value="">Zone</option>
             {% for z in Locations %}
-                {% if z!="Port MSP" and z!="Port West" %}
+                {% if z!="Port MSP" and z!="Port West" and z!="launchlocation0" and z!="launchlocation1" and z!="launchlocation2" and z!="launchlocation3" and z!="launchlocation4" %}
                     <option value={{z}}>{{z}}</option>
                 {% endif %}
             {% endfor %}
