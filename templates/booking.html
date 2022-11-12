@@ -33,17 +33,7 @@
                         {% else %}
                             <td>{{mainQ.iloc[i,j]}}</td>
                         {% endif %}
-                    {% endfor %}   
-                    <script>
-                        function popupmsg(){
-                            if (confirm('Do you really want delete this booking ?')) {
-                                $('#cover-spin').show(0)
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    </script>
+                    {% endfor %}
                     <td>
                         <form action="{{ url_for('delete') }}" method="POST" onsubmit="return popupmsg();">
                             <input type="hidden" name="bookingid" value={{i}}>
