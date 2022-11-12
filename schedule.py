@@ -98,7 +98,8 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
             else:
                 temp_location.append('Port MSP')
         elif launchlocation[1] == None:
-            temp_location.append(launchlocation["Port"])
+            # port launches are from
+            temp_location.append(launchlocation[0][i])
         else:
             temp_location.append('launchlocation{}'.format(launchlocation[3]))
             '''
@@ -134,7 +135,8 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
             else:
                 temp_location.append('Port MSP')
         elif launchlocation[1] == None:
-            temp_location.append(launchlocation["Port"])
+            # port launches are from
+            temp_location.append(launchlocation[0][i])
         else:
             temp_departure = temp_departure[:-1]
         travel_time = round(distMatrix[links[i][j]][links[i][j-1]]/0.463)
@@ -147,13 +149,23 @@ def route2Timetable(df, fleetsize, solutionSet, launchlocation):
         departure_time.append(temp_departure)
     
     # Populate timetable
+    # Check if there are any solution that are feasible and within time window. Otherwise no solution
+    tw_fail = True
     for i in range(len(locations)):
         # Check if arrival time back at port is passed time window
         if launchlocation != None:
+            
+            # Check if it is only port and port, which would show [NA,time]
+            if len(arrival_time[i]) == 2:
+                continue
             if arrival_time[i][-2] > 540 + 150*(launchlocation[3]+1):
-                print("Arrival for launch",i, "is ", arrival_time[i][-1], ", which is passed time window")
-                return False
-        
+                print("Arrival for Launch",i, "is ", arrival_time[i][-1], ", which is passed time window")
+            else:
+                tw_fail = False
+            
+        if (launchlocation != None) & tw_fail:
+            return False
+
         temp_table = []
         for j in range(len(locations[i])):
             temp_table.append([locations[i][j], arrival_time[i][j], departure_time[i][j]])

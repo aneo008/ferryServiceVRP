@@ -255,14 +255,20 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
         left = []
         options = {}  # {case no.: [r2t, change_in_objFn]}
         for l in range(fleetsize):
-            if (launch_location[timewindow][l][1] == Locations["Port West"]) or (launch_location[timewindow][l][1] == Locations["Port MSP"]) or (len(launch_route[timewindow][l]) == 2):
+            if (launch_location[timewindow][l][1] == Locations["Port West"]) or (launch_location[timewindow][l][1] == Locations["Port MSP"]) or (launch_location[timewindow][l][0] == "Returned"):
                 not_left.append(l)
             else:
                 left.append(l)
-
+        
         if not_left != []:
             case = 1
             options[case] = []
+            
+            launchlocation = {}
+            launchlocation[0] = []
+            launchlocation[1] = None
+            launchlocation[2] = t_now
+            launchlocation[3] = cur_tour
             # Create df for zones served by launches that have not left; excluding new booking ogQ, ogQ2 including
             for l in not_left:
                 ogQ_tour = ogQ.loc[(ogQ['Start_TW'] <= 540+timewindow*150) & (ogQ['End_TW'] >= 540+(
@@ -280,23 +286,20 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 ogQ2_tour = pd.concat([ogQ_tour, newbooking_df])
                 ogQ2_tour = ogQ2_tour.reset_index(drop=True)
 
-            # Solve for launches that have not left in current tour
-                _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(
-                    len(ogQ2_tour)-1, len(not_left), ogQ2_tour, None, False)
-                
-                launchlocation = {}
-                launchlocation["Port"] = ogQ_tour.iloc[0,2]
-                launchlocation[1] = None
-                launchlocation[2] = t_now
-                launchlocation[3] = cur_tour
-                
-                if objFn2 != None:
-                    r2t = route2Timetable(ogQ2_tour, len(not_left), solutionSet, launchlocation)
-                    
-                    # Test if time has been exceeded eg book 1 min before time window ends
-                    if r2t == False:
-                        return False
+                launchlocation[0].append(launch_route[cur_tour][l][-1]) # port
 
+            # Solve for launches that have not left in current tour
+            _, solutionSet, _, objFn2, _, _, _, _ = calculateRoute(
+                len(ogQ2_tour)-1, len(not_left), ogQ2_tour, None, False)
+            
+            if objFn2 != None:
+                r2t = route2Timetable(ogQ2_tour, len(not_left), solutionSet, launchlocation)
+                
+                # Test if time has been exceeded eg book 1 min before time window ends
+                if r2t == False:
+                    options[case].extend((None, None, None))
+                    pass
+                else:
                     options[case].append(r2t)
 
                     # Calculate change in objFn by calculating objFn of original without new booking
@@ -307,8 +310,8 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                     options[case].append(objFn2-objFn)
                     options[case].append(l)
 
-                else:
-                    options[case].extend((None, None, None))
+            else:
+                options[case].extend((None, None, None))
 
     # 3. Then try current tour but launches that left, reoptimise route. Calculate total objective value and increase (ie cost)
         # Only for backhaul requests
@@ -356,7 +359,7 @@ def addBookingFn(request_type,zone,passengers,timewindow,t_now,cur_tour):
                 if objFn2 != None:
                     # Have to consider what happens if some zones have already been served
                     r2t = route2Timetable(df2, 1, solutionSet, launchlocation)
-                    print(solutionSet,r2t)
+                    print("Timetable: ",r2t)
                     options[case].append(r2t)
 
                     # Calculate change in objFn by calculating objFn of original without new booking
