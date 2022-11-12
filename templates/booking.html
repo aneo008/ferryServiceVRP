@@ -34,13 +34,23 @@
                             <td>{{mainQ.iloc[i,j]}}</td>
                         {% endif %}
                     {% endfor %}   
+                    <script>
+                        function popupmsg(){
+                            if (confirm('Do you really want delete this booking ?')) {
+                                $('#cover-spin').show(0)
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    </script>
                     <td>
-                        <form action="{{ url_for('delete') }}" method="POST" onsubmit="return confirm('Do you really want delete this booking?');">
+                        <form action="{{ url_for('delete') }}" method="POST" onsubmit="return popupmsg();">
                             <input type="hidden" name="bookingid" value={{i}}>
                             {% if (mainQ2[i] < 540+(tour+1)*150) and (mainQ.iloc[i,1]==2) %}
                                 <button class="btn btn-secondary" disabled>Delete</button>
                             {% else %}
-                                <button id="delete" type="submit" class="btn btn-danger" name="delete" onclick="$('#cover-spin').show(0)">Delete</button>
+                                <button id="delete" type="submit" class="btn btn-danger" name="delete">Delete</button>
                             {% endif %}
                         </form>
                     </td>

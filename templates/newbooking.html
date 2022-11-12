@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block body %}
+<div id="cover-spin"></div>
 <h1>Make a New Booking</h1><br>
 <form action="{{ url_for('addbooking') }}" method="POST" class="row g-3 needs-validation" novalidate>
     <div class="col-md-4">
@@ -58,7 +59,7 @@
         </div>
     </div>
     <div class="col-12">
-        <button id="submit" type="submit" class="btn btn-primary">Submit</button>
+        <button id="submit" type="submit" class="btn btn-primary" onclick="$('#cover-spin').show(0)">Submit</button>
     </div>
 </form>
 <script>
