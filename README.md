@@ -12,7 +12,7 @@ The algorithms were run and tested on a MacBook Pro 13-inch 2018 model with a 2.
 
 ## Directory
 ```
-├── datasets
+├── datasets # All datasets used. Only *order.csv* is used in this project. *ogQ.csv* and *ogQ2.csv* would be created in this folder.
 │   └── order.csv
 ├── OtherAlgorithms
 ├── outputs
