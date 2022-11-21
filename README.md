@@ -112,6 +112,14 @@ Ensure you have internet connection for the formatting to work as the formatting
 
 Currently, *schedule.py* runs every time you start up the server. If this takes too much time (eg when debugging), you may wish to hash out #schedule.py in line 14 of *app.py*. However if you do this, remember to run *schedule.py* before running *app.py*.
 
+## Tips
+### When debugging
+#### Restart the server after making changes
+If there is an error while using the server, after making a change, the server restarts. However, files such as *mainQ.csv* would not be deleted and images would not be reset. The reset function *delete_Q* in *appTools.py* only runs on 2 conditions: 1. When the restart button is pressed on the webpage 2. When the server is turned off with ctrl+C. So if you have to make a change, be sure to do one of the above before continuing.
+
+#### Use debugging mode
+If you are using Visual Studio Code, or any other hacking app, there should be a debugging mode that allows you to run line by line. This saves you the trouble of having to add "print" to every line to find out what went wrong.
+
 ## References
 1. [Modelling and Analysis of a Vehicle Routing Problem with Time Windows in Freight Delivery (MIP Model)](https://github.com/dungtran209/Modelling-and-Analysis-of-a-Vehicle-Routing-Problem-with-Time-Windows-in-Freight-Delivery/)
 2. [A Python Implementation of a Genetic Algorithm-based Solution to Vehicle Routing Problem with Time Windows](https://github.com/iRB-Lab/py-ga-VRPTW/)
