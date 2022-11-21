@@ -60,7 +60,7 @@ deactivate
 
 ## Usage
 
-#### 1. Test python scripts on a sample dataset: *LT1.csv*, by default. 
+### 1. Test python scripts on a sample dataset: *LT1.csv*, by default. 
 
 Integer Linear Programming Model
 ```python
@@ -74,7 +74,7 @@ When running *lpModel.py* , the scripts generate visualisation maps that are aut
 
 The analysis of the output logs from *lpModel.py* can be found in *resultsAll.xlsx*, in folder: */outputs/logs*.
 
-#### 2. Run scheduling system, which optimises the sets of routes for the following test case.
+### 2. Run scheduling system, which optimises the sets of routes for the following test case.
 
 Dataset: *datasets/order.csv*,
 
@@ -88,7 +88,7 @@ python3 schedule.py
 When *schedule.py* is run, it generates a timetable, *schedule.csv*, which is automatically saved in folder: */outputs/logs*.
 It also generates visualisation maps that are automatically saved in folder: */outputs/plots/schedule*.
 
-#### 3. Run the FLASK app which would start a local host server on your computer and allow you to view all relevant data generated on a browser.
+### 3. Run the FLASK app which would start a local host server on your computer and allow you to view all relevant data generated on a browser.
 
 ```python
 python3 app.py
