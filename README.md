@@ -93,7 +93,18 @@ It also generates visualisation maps that are automatically saved in folder: */o
 ```python
 python3 app.py
 ```
-After running *app.py*, the terminal should show the address the server is running on that would look something like "Running on http://127.0.0.1:5000". Copy this address and paste it into your browser. To close the server, press CTRL+C. 
+After running *app.py*, the terminal should show the address the server is running on. 
+```bash
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000 # <-- copy this address
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 763-151-735
+```
+Copy the address and paste it into your browser. To close the server, press CTRL+C. 
 
 For the server, the HTML templates are found in */templates*, CSS in */static/css*, images including the solution of each tour route in */static/img*.
 
