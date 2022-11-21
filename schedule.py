@@ -253,6 +253,7 @@ def schedule(file,fleet,tour_ip):
         ax.imshow(img)
         
         if tour_ip != None:
+            # Modify which tour the program is processing, only for optimisation of next time window booking / cancellation
             for j in range(len(df_tours)):
                 if df_tours[j][0][0] == 540 + 150*tour_ip:
                     i=j

@@ -10,6 +10,43 @@ The objective of this repository is to develop a robust scheduling system that c
 All the above methods were implemented using Python 3.10.
 The algorithms were run and tested on a MacBook Pro 13-inch 2018 model with a 2.3 GHz Quad-Core Intel Core i5 and 16 GB RAM.
 
+## Directory
+```
+├── datasets
+│   └── order.csv
+├── OtherAlgorithms
+├── outputs
+│   ├── logs
+│   └── plots
+├── static
+│   ├── css
+│   ├── img
+│   └── js
+├── templates
+├── venv
+├── app.py
+├── appTools.py
+├── dynamic.py
+├── lpModel.py
+├── lpTools.py
+├── requirements.txt
+├── schedule.py
+└── utils.py
+```
+*/datasets* - All datasets used. Only *order.csv* is used in this project. *ogQ.csv* and *ogQ2.csv* would be created in this folder.
+*/OtherAlgorithms* - Other algorithms used previously. For reference purposes, not used in this project.
+*/outputs* - only */logs* is used in this project. *raw_Timetable_X.csv* (X refers to tour number), *mainQ.csv* would be created here.
+*/static* - */css* contains the CSS codes for the loading screen, */img* contains all images used. Visual representation of routes generated are also saved here. */js* contains all javascript used.
+*/templates* - all html templates used
+*/venv* - virtual environment file
+*app.py* - main file that creates local host flask server to run webpage
+*appTools.py* - contains functions used in app.py that adds and removes bookings
+*dynamic.py* - handles miscellaneous functions such as launch location and mainQ
+*lpModel.py* - Integer Linear Programming model
+*lpTools.py* - Tools used by *lpModel.py*
+*schedule.py* - main file to run optimisation
+*utils.py* - contains functions such as distance matrix used by *lpModel.py*
+
 ## Installation
 
 #### 1. Clone this repository in your working directory (Skip this step if this folder is already downloaded in your computer)
