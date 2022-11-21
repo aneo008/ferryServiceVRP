@@ -52,7 +52,7 @@ python3.10 -m venv venv # Create Virtual Environment for Python 3.10 named "venv
 
 # Enter virtual environment
 source venv/bin/activate 
-pip install -r requirements.txt # If venv file exists, this should already be installe
+pip install -r requirements.txt # If venv file exists, this should already be installed
 
 # To exit virtual environment when done
 deactivate 
