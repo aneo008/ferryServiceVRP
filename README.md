@@ -120,6 +120,9 @@ If there is an error while using the server, after making a change, the server r
 #### Use debugging mode
 If you are using Visual Studio Code, or any other hacking app, there should be a debugging mode that allows you to run line by line. This saves you the trouble of having to add "print" to every line to find out what went wrong.
 
+### Using default terminal
+When coding, it may be easier to use a program like Visual Studio Code (VSC) and VSC's terminal. However, it seems running *app.py* on the default terminal (ie terminal for Mac, PowerShell for Windows) yeilds a faster run time for some reason. If speed is an issue, you might want to consider this.
+
 ## References
 1. [Modelling and Analysis of a Vehicle Routing Problem with Time Windows in Freight Delivery (MIP Model)](https://github.com/dungtran209/Modelling-and-Analysis-of-a-Vehicle-Routing-Problem-with-Time-Windows-in-Freight-Delivery/)
 2. [A Python Implementation of a Genetic Algorithm-based Solution to Vehicle Routing Problem with Time Windows](https://github.com/iRB-Lab/py-ga-VRPTW/)
